@@ -1,0 +1,117 @@
+{
+ "images": {
+  "-10": "tileset/syjt_tiles.png"
+ },
+ "image_names": {
+  "-10": "商域之创世纪·城镇瓦片"
+ },
+ "tilesets": {
+  "syjt": {
+   "grass": {
+    "name": "草地",
+    "pic": [
+     -10,
+     0,
+     0
+    ],
+    "density": false
+   },
+   "road": {
+    "name": "路面",
+    "pic": [
+     -10,
+     1,
+     0
+    ],
+    "density": false
+   },
+   "wall": {
+    "name": "墙",
+    "pic": [
+     -10,
+     2,
+     0
+    ],
+    "density": true,
+    "obj": true
+   },
+   "counter": {
+    "name": "柜台",
+    "pic": [
+     -10,
+     3,
+     0
+    ],
+    "density": true,
+    "obj": true
+   },
+   "door": {
+    "name": "门头",
+    "pic": [
+     -10,
+     4,
+     0
+    ],
+    "density": false,
+    "obj": true
+   },
+   "shelf": {
+    "name": "货架",
+    "pic": [
+     -10,
+     5,
+     0
+    ],
+    "density": true,
+    "obj": true
+   },
+   "tree": {
+    "name": "树",
+    "pic": [
+     -10,
+     6,
+     0
+    ],
+    "density": true,
+    "obj": true
+   },
+   "wood": {
+    "name": "木地板",
+    "pic": [
+     -10,
+     7,
+     0
+    ],
+    "density": false
+   },
+   "tile": {
+    "name": "瓷砖",
+    "pic": [
+     -10,
+     8,
+     0
+    ],
+    "density": false
+   },
+   "banner": {
+    "name": "布旗",
+    "pic": [
+     -10,
+     9,
+     0
+    ],
+    "density": false,
+    "obj": true
+   },
+   "plaza": {
+    "name": "广场",
+    "pic": [
+     -10,
+     10,
+     0
+    ],
+    "density": false
+   }
+  }
+ }
+}

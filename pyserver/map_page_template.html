@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<title>"$MapName" on Tilemap Town</title>
+<link rel="canonical" href="$ThisPageURL">
+<link rel="stylesheet" type="text/css" href="${AssetsBaseURL}css/chat.css" />
+<link rel="stylesheet" type="text/css" href="${AssetsBaseURL}css/xbbcode.css" />
+<meta property="og:title" content="$MapName" />
+<meta property="og:description" content="$MetaMapDesc" />
+<meta property="og:type"  content="website" />
+<meta property="og:url"   content="$ThisPageURL" />
+<meta property="og:site_name" content="Tilemap Town" />
+<meta name="msapplication-TileColor" content="#80ff80">
+<meta name="theme-color" content="#80ff80">
+<style>
+.green1 {
+	background:#80ff80;border:8px outset #a0ffa0;color:black;
+}
+body {
+	font-size:16px;
+}
+blockquote {
+	border:dashed #80ff80 3px;
+	background: #eeffee;
+	max-width: 600px;
+	margin: 1em auto;
+}
+.join {
+	font-size:24px;
+}
+.join_touch {
+	font-size:24px;
+	display: none;
+}
+#margins {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+#mapCanvasContainer {
+	max-width: 100%;
+	max-height: 800px;
+	overflow: auto;
+	margin: 8px auto;
+}
+#mapCanvas {
+	background: #6abe30;
+	max-width: 600px;
+	max-height: 600px;
+	display: block;
+	margin: auto;
+}
+@media (hover: none) or (pointer: coarse) {
+	.join {
+		display: none;
+	}
+	.join_touch {
+		display: inline;
+	}
+	#edge-link-buttons {
+		font-size: 24px;
+	}
+	#mapCanvas {
+		max-width: 800px;
+		max-height: 800px;
+	}
+}
+.center {
+	text-align: center;
+}
+#mapCanvas {
+	cursor: pointer;
+}
+.unselectable {
+	user-select: none;
+}
+#edge-link-buttons td {
+	display: inline-block;
+	color: white;
+	background-color: #333;
+	border-radius: 5px;
+	border: 1px solid #000;
+	width: 2em;
+	height: 2em;
+	text-align: center;
+	cursor: pointer;
+}
+#edge-link-buttons td:hover {
+	background-color: lightpink;
+}
+#edge-link-buttons td.disabled {
+	background-color: #ccc;
+	cursor: unset;
+}
+#edge-link-buttons td.disabled:hover {
+	background-color: #ccc;
+}
+</style>
+<script src="${AssetsBaseURL}js/draw_map.js"></script>
+<script src="${AssetsBaseURL}js/map.js"></script>
+<script src="${AssetsBaseURL}js/xbbcode.js"></script>
+<script src="${AssetsBaseURL}js/map_page.js"></script>
+</head>
+<body onLoad="init();"
+	data-tilemap-town-metadata-format="1"
+	data-tilemap-town-websocket-url="$WSURL"
+	data-tilemap-town-api-url="$APIURL"
+	data-tilemap-town-map-id="$MapID"
+	data-tilemap-town-map-name="$MapName"
+	data-tilemap-town-map-desc="$DataMapDesc"
+	data-tilemap-town-map-owner="$MapOwner"
+>
+<img src="${AssetsBaseURL}img/tileset/webclient.png"  style="display: none;" id="webclientGraphics">
+<a href="https://github.com/NovaSquirrel/TilemapTown"><img decoding="async" loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_green_007200.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1" style="position: absolute; top: 0; right: 0; border: 0;"></a>
+
+<div style="max-width:900px; margin-left:auto; margin-right:auto;">
+<div class="green1">
+<span class="center"><h1><a href="${AssetsBaseURL}"><img src="${AssetsBaseURL}img/logo.png" alt="Tilemap Town"></a></h1></span>
+</div>
+<div style="background:black;color:white;"><div class="center">Collaborative map building and hangout/roleplay</div></div>
+<br>
+
+<div style="border:dashed #80ff80 3px;"><div id="margins">
+<div>
+	<div>
+		<noscript>Map view requires JavaScript</noscript>
+
+		<div id="mapCanvasContainer">
+			<canvas width="600" height="600" id="mapCanvas"></canvas>
+		</div>
+		<table border="1" style="margin: auto;">
+			<tbody>
+				<tr>
+					<th scope="row">Name</th>
+					<td id="mapNameTd">$MapName</td>
+				</tr>
+				<tr>
+					<th scope="row">Owner</th>
+					<td id="mapOwnerTd">$MapOwner</td>
+				</tr>
+			</tbody>
+		</table>
+		<blockquote class="center" id="mapDesc">$MapDesc</blockquote>
+
+		<div id="edge-link-buttons" style="display: none;" class="unselectable">
+			<table border="0" style="margin: auto;">
+				<tr>
+					<td id="edge_button_5">&nwarr;</td>
+					<td id="edge_button_6">&uarr;</td>
+					<td id="edge_button_7">&nearr;</td>
+				</tr>
+				<tr>
+					<td id="edge_button_4">&larr;</td>
+					<td id="edge_button_home">&#x1F3E0;</td>
+					<td id="edge_button_0">&rarr;</td>
+				</tr>
+				<tr>
+					<td id="edge_button_3">&swarr;</td>
+					<td id="edge_button_2">&darr;</td>
+					<td id="edge_button_1">&searr;</td>
+				</tr>
+			</table>
+		</div>
+
+		<p class="center">
+			<a href="$WebClientURL" class="join">Visit this map</a><a href="$WebClientTouchURL" class="join_touch">Visit this map</a><noscript><br>Though maybe not with this browser, because the web client requires JavaScript.</noscript><br>If you're already connected, teleport here with <kbd>/map <span id="teleportMapID">$MapID</span></kbd>
+		</p>
+	</div>
+</div>
+
+</div></div></div>
+
+</body></html>

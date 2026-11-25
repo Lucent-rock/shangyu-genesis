@@ -1,0 +1,721 @@
+---Chat---
+/clear
+Clear chat area
+
+/tell user message (alias p, or msg)
+Private message
+
+/roll dice sides
+Roll dice
+
+/me text
+Send text marked as being an action that you did
+
+/spoof text
+Send text marked as being an action that happened in the environment
+
+/ooc text
+Send text marked as being out-of-character
+
+/ignore username
+/unignore username
+/ignorelist
+Manage ignore list
+You can use "!objects" as a special username to block entities that are not users, and "!guests" to block entities that are not registered accounts. "!watchonly" will block all users except the ones on your watch list.
+You can prefix the username with a specific action you want to block:
+	chat:username    | Public map chat (and output from some commands)
+	mail:username    | Mail
+	request:username | Requests (like /tpa)
+	pm:username      | Private messages
+These prefixes can be combined with the special usernames, so you can ignore "pm:!guests" to prevent guests from sending you private messages, but still see public messages
+Server admins can always message you regardless of your ignore list. Ignores also will not work against yourself.
+
+/watch username
+/unwatch username
+/watchlist
+Manage watch list
+
+/away (message, optional)
+Set or clear away status
+
+/status
+/status status
+/status status message
+Clear status, set a status, or set a status with a message attached. The "iic" status is special ("Interested in being In Character") and you can search for it with /findiic.
+
+/exportlogs
+Save the log of your current chat session to a text file
+
+/topic
+/topic message
+Get or set the discussion topic/activity of the current map, if allowed
+Currently only registered users can set topics, and topics are cleared when there is no longer anyone on a map
+
+/cleartopic
+Clears the map's current topic
+
+/oops
+Put the most recent text you tried to send back into the chat bar, so that you can have another attempt at a command.
+
+/focuschat off
+/focuschat distance 5
+/focuschat names name1 name2 name3
+/focuschat distancenames 5 name1 name2 name3
+Make the chat for anyone who doesn't meet the criteria you set here appear small and gray. "Names" uses usernames, and "Distance" is in units of tiles.
+"DistanceNames" will deemphasize messages outside the distance unless they have one of the provided usernames.
+
+/offlinequeue username
+/offlinequeue username clear
+Manage queued messages for offline users.
+
+---Utility---
+/getturf
+Makes a map tile object that would recreate the turf you're standing on, and puts it into your inventory.
+
+/getobj
+Makes map tile objects that would recreate every map object you're standing on, and puts it into your inventory.
+
+/undodel
+Undoes your most recent delete
+
+/releasekeys
+If a script is currently acting on your inputs, this command cancels out that mode
+
+/playmusic url
+Starts playing a song
+
+/stopmusic
+Stops playing whatever music is currently playing
+
+/whatturf
+/whatobjs
+Show how Tilemap Town is storing the tile you're standing on
+
+/openprofile username
+Open an arbitrary user's profile, regardless of if they're online
+
+/edititem id
+Edit item regardless of if it's in your inventory
+
+/clearhotbar
+Clears the hotbar
+
+/cameraxy
+/cameraxy x y
+Lock the camera to a specific place, or unlock it if no coordinates are provided
+
+/useitem ID
+Acts as if you had clicked on a specific entity
+
+---Account/customization---
+/nick newname
+Change display name
+
+/userdesc text
+Change your description
+
+/userpic bunny, cat, hamster, fire, invisible, snail, or turtle
+/userpic x y (measured in tiles, from https://tilemap.town/img/tileset/potluck.png)
+/userpic url
+/userpic sheet x y
+Change your icon
+
+/extuserpic url {json properties}
+Changes your icon, and sets extended entity appearance properties (see entity_pic.txt)
+
+/savedpic
+/savedpic name
+Switch to a different saved pic.
+If you don't provide a name, you'll get a list of pics you have saved.
+
+/savedpiclist
+/savedpiclist set name url
+/savedpiclist del name
+/savedpiclist clear
+Manage the saved pic list.
+
+/savedpiclist list2
+Get the list of saved pics in text form (just in case you're on a client that doesn't support buttons).
+
+/morph
+/morph name
+/qmorph name
+Switch to a different morph (which is a combination of name, description, pic, saved pics, and tags)
+qmorph will morph "quietly" which means that there is no notification sent to the other users on the map
+
+/morphlist
+/morphlist set name
+/morphlist del name
+/morphlist clear
+Manage the morph list
+
+/morphlist list2
+Get the list of morphs in text form (just in case you're on a client that doesn't support buttons).
+
+/login username password
+/register username password
+/changepass newpass
+Manage account
+
+/userflags
+/userflags add flag
+/userflags del flag
+Set, unset and view your user flags
+Flags available:
+	bot           : Marks this user as a bot
+	hide_location : Makes this user's location private, so they will not show up in /whereare
+	hide_api      : Makes this user not show up on the API
+	no_watch      : Prevents the watch feature from working on this user
+	secret_pic    : Prevents checking this user's "pic" and "desc" remotely
+	no_offline_pm_mail : Never convert private messages sent or received by this user to mail (which normally happens when the user hasn't received it by the time the server restarts)
+
+---User information---
+/who
+List all users on the map
+
+/entitywho
+List all entities on the map, not just users
+
+/whereare (alias: wa)
+Display a list of public maps that have users
+If these maps also have topics set, they are displayed too
+Tentative feature: You can use "/wa c" to show coordinates of the found players
+
+/gwho
+List all users on the server
+
+/look user
+Reads the character description of someone (or something) on the same map
+
+/last user
+Displays someone's last login/logout time
+
+
+---Movement---
+/offset
+/offset x y
+/roffset x y
+Offsets your character some amount of pixels horizontally and vertically
+/roffset will change the offset relative to the current offset
+If no offset is given, the offset is reset
+
+/z index
+Change your z-index; if your Y coordinate matches someone else's, and your z-index is higher, you'll appear on top. Can be -10 to 10, and defaults to 0.
+
+/draw_layer index
+Changes your draw layer; if your draw layer is above someone else's, your avatar will appear over theirs regardless of the Y coordinate. Can be -2 to 2 and defaults to 0.
+
+/map mapnumber
+/map mapnumber x y
+/defaultmap
+Switch to a different map
+You can optionally provide coordinates to teleport to on the new map
+
+/coords
+Display your coordinates
+
+/goback
+Go back to the map you were previously on
+
+/tpa user (alias mjoin)
+Requests a teleport to another user
+
+/tpahere user (alias msummon)
+Request to teleport another user to you
+
+/tpainv user
+Request to teleport into another user's inventory
+
+/tpamyinv user
+Request that a user teleport into your inventory
+
+/tpaccept user
+Accept a teleport request
+
+/tpdeny user (alias mdecline)
+Refuse a teleport request
+
+/tpaccept user type id
+/tpdeny user type id
+Accept/refuse a specific teleport request, where "type" is currently "tpa", "tpahere", "carry", "followme", or "followmap". ID may be left out, in which case the request's ID doesn't have to match.
+
+/tpcancel user (alias mcancel)
+Cancel all requests you made to a specific user
+
+/sethome
+Sets your "home"
+
+/home
+Teleports to your "home"
+
+/tpherecommand
+Get a command you can paste to other people that will allow them to teleport to your current location
+
+/tailshift offset diagonalOffset
+/tailshift offset
+/tailshift
+Feature to help with sprites that are not centered at the middle of the image. If you enter 4, for instance, when facing right your sprite will be offset 4 pixels to the left, and when facing left your sprite will be offset 4 pixels to the right. Meant for sprites that have big tails in the back, while still allowing the character's feet to stand on the tile's center. You can optionally supply a separate value that will be used for diagonal directions.
+You can use /tailshifto as an alternative if you want the client to attempt to preserve a manually applied horizontal offset as you flip between directions.
+/tsh is an alias for /tailshift
+
+/userparticle sheet/url x y param1=value1 param2=value2 param3=value3
+Can also use /usp as an alias. Plays a short animation on the map near you using graphics of your choice.
+This exists to make it easier to send animations until the client gets a better way to do it.
+
+Examples:
+	/userparticle 0 2 24 offset=0,-32
+		Display a happy expression bubble above you for a short time
+	/userparticle 0 24 29 offset=0,-32 anim_frames=6 anim_loops=1
+		Display a 6-side die rolling from 1 to 6 above you, playing twice and then stopping
+	/userparticle 0 4 21 random_offset=0,0,8,8 anim_frames=7 anim_loops=0
+		Display an explosion and smoke some random distance from your avatar that plays once and stops
+	/userparticle 0 10 22 anim_frames=7 duration=20
+		Display a blooming flower that lasts for 2 seconds
+	/userparticle 0 4 26 anim_frames=2 hide_me
+		Display a fire guy in place of your avatar
+
+Parameters available:
+    size=width,height
+		Measured in 16x16 units
+    at=x,y
+		Measured in 16x16 units; where on the map the animation should play. Defaults to being pinned to your current position, unless a different position is given here.
+    atr=x,y
+		Same as above, but relative to your current position when you run the command
+    offset=pixel_x,pixel_y
+		Pixel offset, similar to when you use the /offset command (can also use o=)
+    random_offset=base_x,base_y,random_x_range,random_y_range
+		Similar to above, but will add or subtract a number up to the X and Y ranges provided from the X and Y bases (can also use ro=)
+    duration=ticks
+		Measured in units of 0.1 seconds (can also use d=)
+    anim_loops=integer
+		Number of times to loop the animation; zero means play once, 1 means play twice
+    anim_frames=integer
+		Number of frames that are in this animation
+    anim_speed=integer
+		Frame duration in units of 0.1 seconds
+    anim_mode=integer
+		0 for forwards, 1 for reverse, 2 for ping-pong, 3 for ping-pong starting in reverse
+    anim_offset=integer
+		Animation offset; effectively a starting position for the animation tick counter
+    hide_me
+		Don't display my avatar while this animation is playing
+
+/bigpic
+/bigpic url frameWidth frameHeight
+/bigpic url frameWidth frameHeight d=directionCount o=offsetX,offsetY to=tileOffsetX,tileOffsetY
+Experimental feature that uses the mini tilemap feature to display a big, non-animated avatar in addition to your regular one. Optional parameters can be added.
+If the direction count is 2, 4, or 8 then the client will select a row from the image the same way it does for regular avatar images.
+Tile offsets choose a base row and column in the image, in frame sized units.
+
+
+---Carrying users---
+/carry user
+/carryme user
+Offer to carry a user (or request that a user carry you)
+
+/followme user
+/followyou user
+Offer to let a user follow behind you (or request that a user let you follow them)
+
+/followmap user
+/followyoumap user
+Offer to let a user follow you to other maps (or request that a user bring you to other maps)
+
+/syncmove user
+Offer to synchronize movement with another user, where either of you moving will move the other
+
+/hopon user
+Accept a user's carry request
+
+/hopoff
+Stop being carried (and stop following)
+
+/dropoff user
+Stop carrying a specific user
+
+/rideend
+Stop carrying anyone
+
+/carrywho
+List who you are carrying
+
+/ridewho
+Display who is carrying you
+
+
+---Other user interaction---
+/requestpermission user permission,permission,permission
+Requests that someone temporarily grant you permissions.
+Valid permissions to request are move, move_new_map, minigame, set_owner_to_this, modify_appearance
+
+/giveitem user item transfer
+/giveitem user item move
+/giveitem user item copy
+/giveitem user item tempcopy
+Offer to give an item to someone. Item has to currently be in your inventory somewhere or at the very least loaded.
+
+Give types:
+	transfer: Assign the user as the new owner of the item *and* move it into their inventory
+	move: Move the item into the user's inventory, but leave ownership the same
+	copy: Make a copy of the item, and put it in the user's inventory
+	tempcopy: Same as above, but item will be marked as temporary even if it wasn't already temporary
+
+---Maps---
+/newmap
+Creates a new map and gives you the number for it (if you are registered)
+
+/savemap
+Saves any changes made to the map
+
+/publicmaps
+List all maps whose privacy setting has been set to "public"
+
+/mymaps
+List all maps that have you set as the owner
+
+/applymapsection {data}
+Overwrites a rectangle of the map with new data, where the data is provided in the same format as the MAP protocol messages.
+Require admin privileges for the map.
+
+
+---Moderation---
+/tp user
+Force teleport to user
+(unimplemented)
+
+/tphere
+Force user to teleport to you
+(unimplemented)
+
+/clearmap
+Clears everything on the map
+(unimplemented)
+
+/kick user
+Sends a user home
+
+/kickban user
+Sends a user home and prevent them from coming back
+
+/kickallusers
+Sends all users home that aren't admins of the current map
+
+/returnall
+/returnall username
+Sends all entities home that are in the same container, aren't players, aren't following players or being carried by them, and aren't owned by the map owner.
+If you specify a username, it will remove all of that user's entities, and will ignore the above.
+
+
+---Map configuration---
+/mapid
+Get map ID
+
+/mapsize width height
+/mapname name
+/mapdesc text
+/mapowner user
+Change map info
+
+/mapdefaultfloor grass
+Change what tile type is the default
+
+/mapwallpaper none
+/mapwallpaper url
+/mapwallpaper url absolute
+/mapwallpaper url center
+/mapwallpaper url repeat
+/mapwallpaper url repeatx
+/mapwallpaper url repeaty
+/mapwallpaper url over_turf
+/mapwallpaper url offset=16,16
+Remove a map wallpaper, or set one. You can specify a series of parameters to specify how the wallpaper should look. You can put all of them on a line together (like /mapwallpaper url center repeat repeatx repeaty offset=8,8), though "absolute" and "center" override each other.
+Wallpapers are images that are overlaid on top of a map, replacing the default floor. If "over_turf" is enabled, the wallpaper will draw on top of all floors, not just the default. Map objects will still draw on top as normal.
+
+/mapmusic none
+/mapmusic url
+Remove background music for the map, or set some.
+
+/mapspawn
+Set map starting position to where you're currently standing
+
+/mapprivacy public/unlisted/private
+Change the privacy of the map.
+Public: Map is publicly listed, and anyone may join
+Unlisted: Map isn't listed anywhere, but anyone may join
+Private: Map isnt listed anywhere, and only users on the whitelist may join
+
+/grant permission username
+/deny permission username
+/revoke permission username
+Modify the map permissions for a particular user.
+A permission can be set to allow (with grant), disallow (with deny), or default (with revoke).
+If a permission for the user is the default, the map's setting for that permission is used instead.
+The map's default can be changed by using !default for the username.
+
+For deny and revoke only, !guest may be used to apply additional restrictions to guests.
+For grant and revoke only, group:groupid may be used to apply additional privileges to members of a given group.
+(groupid is the numeric ID of the group)
+
+Permissions available:
+entry     : Allowed to teleport to the map
+build     : Allowed to build
+sandbox   : Allowed to edit or delete other peoples' objects freely
+admin     : Allowed to use admin commands
+map_bot   : Allowed to use /listen
+bulk_build: Allowed to use builk-build protocol commands (BLK)
+object_entry            : Allowed to bring non-player entities here
+persistent_object_entry : Allowed to bring non-player entities here persistently (otherwise, they'll be sent home when the map unloads)
+modify_properties       : Allowed to modify properties of the map
+remote_command          : Allowed to make the entity do a command
+modify_appearance       : Allowed to modify certain properties of the map or other entity
+list_contents           : Allowed to get a list of the entities in this entity remotely (for text items, this also allows someone to read the text remotely)
+set_owner_to_this       : Allowed to set the owner of their entities to this entity
+set_topic               : Allowed to change the topic on this map
+
+/permlist
+List the map's default permissions and the permissions for each user
+
+/mapimport
+Provide an input to upload a map
+(unimplemented)
+
+/mapentrytext text
+Set text to display upon entry
+(unimplemented)
+
+/mapexport
+Allow the user to download the map as a text file
+
+/mapscreenshot
+Renders the entire map as an image that you can download
+
+/mapbuild on/off
+Enable or disable building on the map
+
+/mapdisablesave on/off
+Enable or disable saving the map (temporarily)
+
+/mapedgelink edge map_id
+Link this map to another map, so that moving past the edge will put you on that other map.
+If map_id is "none" then the link will be removed.
+The link has to be applied separately on both maps.
+Edge is a number from 0 to 7, where 0 is east, 1 is south east, 2 is south, and so on.	
+
+
+---Miscellaneous---
+/time
+Display current date and time
+
+/disconnect
+Disconnect yourself from the server
+
+/privateroll dice sides
+Roll dice, but only show the result to you
+
+---Bot/Listen commands---
+/listen category,category,... map_id,map_id,...
+/unlisten category,category,... map_id,map_id,...
+Start or stop listening in on a comma separated list of categories and maps. The client's account must be registered and have been granted the map_bot permission for the map being listened in on. "chat" and "chat_listen" may alternatively be done through the remote_chat permission.
+
+Protocol messages relayed will have a "remote_map" parameter added to them, with the map ID.
+Messages will also have "username" and "id", for PUT, DEL and BLK.
+
+Categories available (and protocol messages that get relayed):
+move:  MOV
+build: PUT, DEL, BLK
+entry: WHO
+chat:  MSG
+chat_listen: sends WHO messages when users start and stop listening to chat on this entity
+
+"build" sends an initial MAI and MAP to the listener 
+"entry" sends an initial WHO to the listener
+"chat_listen" sends an initial WHO to the listener
+
+/listeners
+List all remote clients currently listening in on the map
+
+/kicklisten category map_id username
+Makes an entity stop listening to a specific category
+
+/keep_entities_loaded
+/keep_entities_loaded id,id,id...
+Set a list of entities that should be kept loaded while you're online (or clear the list)
+
+/test_entities_loaded id,id,id...
+Test if specific entities are loaded
+
+/message_forwarding set entity_id,entity_id,entity_id...
+/message_forwarding set entity_id,entity_id,entity_id... MAP,MAI,PRI ...
+See the message forwarding section in protocol.txt
+
+/deletemytempitems
+/deletemytempitems all
+/deletemytempitems here
+/deletemytempitems inventory
+Delete all of the temporary entities that you created within a given area. If that's not specified, it will default to "all".
+
+---Group commands---
+/newgroup
+Create a new group
+
+/namegroup id text
+/descgroup id text
+Change the name or description of a group
+
+/changegroupowner id username
+Transfer the group to a new owner
+
+/joinpassgroup id text
+Change the join password of a group, or remove the join password by leaving it blank and make it purely invite-only
+
+/deletegroup id
+Delete a group you own
+
+/invitetogroup id username
+Invite someone to a group
+(unimplemented)
+
+/joingroup id
+/joingroup id password
+Join a group
+
+/leavegroup id
+Leave a group you're in
+
+/kickgroup id username
+Remove someone from a group you're in
+
+/ownedgroups
+Display a list of the groups you own
+
+/mygroups
+List of the groups you're part of
+
+
+---Entity command---
+
+/entity id
+/entity id info
+Get information about the entity, such as properties and contents.
+
+/entity id locate
+Find where this entity is
+
+/entity id when
+Find out when this entity was created or acquired
+
+/entity id tags
+/entity id addtag      tag_group tag value 
+/entity id deltag      tag_group tag
+/entity id addtag_root tag value 
+/entity id deltag_root tag
+Get tags or change them.
+
+/entity id perms
+/entity id permsfor id
+Get permissions on an entity, or test permissions for this entity acting on a different entity.
+
+/entity id grant permission id/username 
+/entity id deny permission id/username
+/entity id revoke permission id/username
+Change permissions.
+
+/entity id tempgrant permission id/username
+/entity id temprevoke permission id/username
+/entity id temprevokeall
+Temporarily grant a permission that will be gone when either entity unloads.
+
+/entity id temprelease username
+Remove a temporary permission that has been given to this entity.
+
+/entity id summon
+Move entity to your position within the map you're on.
+
+/entity id nolocation
+Teleport entity to nowhere (use /findmyitems to get it back).
+
+/entity id move x y
+/entity id move x y direction
+/entity id rmove x y
+/entity id rmove x y direction
+Move entity to another location on the same map, with an optional field for direction. rmove uses relative coordinates. You can move an entity to a new map with "do" and the "map" command.
+
+/entity id do command_here
+Same as sending a CMD protocol message with the "rc" field set.
+
+/entity id delete
+Delete an entity that you own.
+
+/entity id save
+Save any changes to an entity.
+
+/e is an alias for /entity
+
+
+---Admin commands---
+/ipwho
+List the IPs of all users currently online
+
+/ipban ip;reason;length
+Add an IP ban.
+
+Length can be blank for bans without an expiration,
+or can consist of a number immediately followed by a unit,
+such as 1d or 30m:
+m=minutes
+h=hour
+d=day
+w=week
+y=year
+
+/ipunban ip
+Remove all bans applying to a given IP
+
+/ipbanlist
+List all IP bans
+
+/broadcast text
+Broadcast text to the whole server
+
+/operoverride
+Toggles whether or not you can bypass permission checks
+
+/resetpassfor username
+Resets the password for a specific account
+
+/rehash
+Reloads the config file, including any resource files the config includes
+
+/flushlogs
+Flushes the log files, so that they're up to date.
+
+/connectlog
+/buildlog
+/uploadlog
+Show temporary logs, and clear them unless the argument "k" is given. "c" will clear without showing.
+
+/deleteuserfile file_id
+Deletes a file someone uploaded
+
+/fixuserfilesizes
+Goes through all uploaded files and updates their size to match the real files
+Also removes files that no longer exist but are still in the database
+
+/adminuserflags username
+/adminuserflags username add flag
+/adminuserflags username del flag
+Change someone else's user flags; can additionally set the "file_uploads" flag to give someone higher limits
+
+/parktext text
+Sets a message to display upon login, to notify about an event going on. If no text is given, go back to not displaying a message.
+
+/parkmap map x y
+Optionally add a map to offer a teleport to in said message. This can be a map number and optionally also have coordinates.
+If no text is given, remove the teleport offer.
+
+/parkmapbutton button_text
+Set text for the teleport offer button.
+
+/parkhere button_text
+Same as above, but use your current coordinates.
+If text is given, the server will use that, otherwise it'll be "Go!".

@@ -1,0 +1,454 @@
+.--------------------------------------------------------------------------------------------------
+| Sample config file
+'--------------------------------------------------------------------------------------------------
+This will set up the server similar to how the official server is set up; feel free to modify it as you need.
+You can name it config.json and put it in the same directory as runserver.py
+
+{
+  "Server": {
+    "Name": "Tilemap Town",
+    "Admins": ["nova"],
+    "MaxUsers": 100,
+    "MaxDBMaps": 100,
+    "MOTD": "Welcome to my [b]Tilemap Town[/b] server",
+    "ResourceFiles": ["server_resources.json", "server_resources2.json", "server_resources3.json"],
+    "ResourceIMGBase": "https://tilemap.town/img/"
+  },
+  "Database": {
+    "File": "tilemaptown.db"
+  },
+  "Images": {
+    "URLWhitelist": ["https://i.imgur.com/", "https://i.postimg.cc/", "https://i.ibb.co/", "https://raw.githubusercontent.com/"]
+  },
+  "Logs": {
+    "BuildFile": "buildlog.txt"
+  }
+}
+
+.--------------------------------------------------------------------------------------------------
+| Config values
+'--------------------------------------------------------------------------------------------------
+
+Server.Port
+Default: 12550
+Port number the server hosts on.
+
+Server.Name
+Default: "Tilemap Town"
+Name of the server.
+
+Server.MOTD
+Default: ""
+Message displayed to a user upon connecting.
+
+Server.Admins
+Default: []
+List of usernames allowed to perform admin actions.
+
+Server.MaxUsers
+Default: 200
+Maximum number of connections allowed to the server at once, or -1 to disable the limit.
+
+Server.MaxDBMaps
+Default: 5000
+Maximum number of maps allowed in the database, or -1 to disable the limit.
+
+Server.WSMaxSize
+Default: 32768
+Maximum number of bytes allowed in incoming websocket messages.
+
+Server.WSMaxQueue
+Default: 32
+Maximum number of incoming websocket messages allowed to queue up before the server stops processing incoming data.
+
+Server.WSURL
+Default: ""
+Publicly accessible URL that can be used to connect to this server with a WebSocket.
+
+Server.WSPingInterval
+Default: 20
+See https://websockets.readthedocs.io/en/stable/topics/keepalive.html
+Number of seconds between each keepalive ping.
+
+Server.WSPingTimeout
+Default: 20
+Number of seconds to wait until timing out a client for failure to respond to a ping.
+
+Server.WebClientURL
+Default: ""
+Publicly accessible URL for the web client, if there is one.
+
+Server.WebClientTouchURL
+Default: ""
+Publicly accessible URL for the web client (touch UI version), if there is one.
+
+Server.BroadcastConnects
+Default: true
+If true, tell everyone on the server about users connecting.
+
+Server.BroadcastDisconnects
+Default: true
+If true, tell everyone on the server about users disconnecting.
+
+Server.MaxMapSize
+Default: 256
+Maximum width or height allowed to be used on a map.
+
+Server.ResourceFiles
+Default: []
+Array of strings, containing the names of JSON files to read, in order.
+These files define images and tilesets to give to clients upon connecting, which can override the default ones the client has.
+Format for these resource files is defined later in this document.
+
+Server.ResourceIMGBase
+Default: ""
+Prefix to add to images specified in resource files, if they do not start with http:// or https://
+The official server uses "https://tilemap.town/img/" for this, for example. Expected to end in a slash.
+
+Server.DoodleBoardPaletteFile
+Default: "doodle_board_palettes.txt"
+File is a list of palettes that the server provides for doodle boards, to allow showing previews when the "colors" command is used.
+See the file for format information.
+
+Server.RequestExpirationTime
+Default: 1200
+Number of seconds that it takes for a sent request (teleports, carrying, etc.) takes to expire.
+
+Server.MaxEntityWidth
+Default: 64
+How width an entity is allowed to be in pixels, when using extended entity pics.
+
+Server.MaxEntityHeight
+Default: 64
+How tall an entity is allowed to be in pixels, when using extended entity pics.
+
+Server.MaxEntityOffset
+Default: 32
+Maximum amount of offset an entity can have from its usual draw position, in pixels.
+
+Server.MaxUserParticleWidth
+Default: 4
+How width a user particle is allowed to be in 16x16 units.
+
+Server.MaxUserParticleHeight
+Default: 4
+How tall a use particle is allowed to be in 16x16 units.
+
+Server.MaxUserParticleDuration
+Default: 50
+How long a user particle is allowed to go on for, in 0.1 second units.
+
+Server.MaxUserParticleOffset
+Default: 48
+How far a user particle can be from the entity it's attached to, in pixels.
+
+Server.AllowedImageFileExtensions
+Default: [".png"]
+Which file extensions are allowed with the /userpic command, and other places images are allowed.  Must be lowercase. If null, all extensions are allowed.
+
+Server.AllowedMusicFileExtensions
+Default: [".mod", ".s3m", ".xm", ".it", ".mptm", ".flac", ".mp3", ".ogg", ".opus", ".wav"]
+Which file extensions are allowed with the /mapmusic command.  Must be lowercase. If null, all extensions are allowed.
+
+Server.EntityCompressionThreshold
+Default: 600
+How many bytes of data an entity must have before it's eligible for zlib compression.
+
+Server.EntityCompressionLevel
+Default: 5
+Compression strength; 0 to 9, where higher numbers compress better but are slower. See https://docs.python.org/3/library/zlib.html
+
+Security.ProxyOnly
+Default: false
+If true, server will reject connections made from IP addresses that do not match the server's own IP
+
+Security.AllowedOrigins
+Default: null
+If not null, it's a list of strings, and a connection will be rejected if the client does not send in an HTTP "Origin" header equaling one of these strings. You can include null (the JSON value null, not a string of the word null) in the list to mark that the lack of an "origin" header is OK. Confusingly, the *text* null may be sent when using a client through a HTML file on your computer.
+If this config value is null, this feature is disabled and all origins are allowed.
+When you put a script on a webpage and it connects to Tilemap Town, the HTTP "Origin" header will be a value like "http://localhost:8000" or "https://tilemap.town", indicating the domain that page is on.
+
+Security.AllowedOrigins2
+Default: null
+Checked at an earlier stage, before the connection is even allowed to happen. Requires a restart to take effect.
+
+Security.BannedOrigins
+Default: []
+A list of origins that are *not* allowed to connect; if a connection has an Origin header containing any string in this list, that user will be disconnected.
+
+Security.DefaultBuildingPermission
+Default: 0
+Allows the admin to lock down building privileges server-wide.
+0: Map building permission defaults to true
+1: Map building permission defaults to true only for registered users, otherwise it's false
+2: Map building permission defaults to true only for trusted builders, otherwise it's false
+3: Map building permission defaults to false for everyone (users can only build on their own maps, or maps they've explicitly been granted permission for)
+
+Security.TrustedOnlyBuilding
+Default: 0
+Allows the admin to lock down building privileges server-wide regardless of permission settings.
+0: Everyone can build
+1: Untrusted users can only build on their own map; trusted builders can build on any map they normally can
+2: Only trusted builders can build
+3: Only server admins can build
+
+Security.TrustedOnlyMapCreation
+Default: 1
+Allows the admin to lock down map creation.
+1: Registered users can make maps
+2: Trusted builders can make maps
+3: Server admins can make maps
+
+Security.NoGuests
+Default: false
+If true, users can't log in without an account
+
+Security.NoRegistration
+Default: false
+If true, users cannot register an account
+
+Security.MaxRegistrationsPerIP
+Default: 3
+Maximum number of registrations that each IP is allowed to do; reset every time /connectlog is used, or when the server restarts
+
+Security.MaxConnectionsPerIP
+Default: 10
+Maximum number of connections that each IP can simultaneously have
+
+Security.PythonEvalCommands
+Default: false
+Controls access to the /pyeval and /pyexec commands. If false, admins cannot use them. If true, they can.
+
+RateLimit.MSG
+Default: true
+If true, limit how often people can send messages to maps
+
+RateLimit.MSG1
+Default: 10
+Number of messages people can send to maps within a minute
+
+RateLimit.MSG5
+Default: 50
+Number of messages people can send to maps within 5 minutes
+
+RateLimit.PRI
+Default: true
+If true, limit how often people can send private messages
+
+RateLimit.PRI1
+Default: 10
+Number of messages people can send private messages within a minute
+
+RateLimit.PRI5
+Default: 50
+Number of messages people can send private messages within 5 minutes
+
+API.Enabled
+Default: true
+If true, makes information about the world available through a web API.
+
+API.Port
+Default: 12551
+Port to host the web API on.
+
+API.URL
+Default: ""
+URL to give clients for accessing the API. Expected to end in a slash.
+
+API.AdminPassword
+Default: ""
+Password required to access sensitive API endpoints, like the build log.
+If a password is not provided here, these endpoints are just not accessible.
+
+Database.File
+Default: "town.db"
+Filename used for Tilemap Town's database.
+
+Database.Setup
+Default: true
+Set up the database if needed. If false, skip this check.
+
+Images.URLWhitelist
+Default: ["https://file.garden/", "https://i.postimg.cc/", "https://i.ibb.co/"]
+Set a list of URL parts that are considered safe to start user-provided image URLs with.
+
+Logs.ConnectFile
+Default: ""
+If provided, this is the filename used for the connect log.
+
+Logs.BuildFile
+Default: ""
+If provided, this is the filename used for the build log.
+
+Logs.BuildDefault
+Default: true
+If on, default to logging all building by default.
+
+Logs.UploadFile
+Default: ""
+If provided, this is the filename used for the upload log.
+
+TempLogs.ConnectSize
+Default: 200
+Maximum number of connection/login messages to keep at once.
+
+TempLogs.BuildSize
+Default: 100
+Maximum number of build messages to keep at once.
+
+TempLogs.UploadSize
+Default: 100
+Maximum number of file upload messages to keep at once.
+
+TempLogs.RollbackSize
+Default: 30
+Maximum number of per-user build history sessions to keep at once, for the sake of map rollbacks.
+
+TempLogs.RollbackItemsSize
+Default: 15000
+Maximum number of entries each of the above can have.
+
+FileUpload.Enabled
+Default: false
+Whether or not users should be able to upload files at all.
+
+FileUpload.URLPrefix
+Default: ""
+Prefix added to names to be able to retrieve an uploaded file through a web server. Expected to end in a slash.
+
+FileUpload.StoragePath
+Default: ""
+Directory where uploaded files are stored.
+
+FileUpload.MaximumFileSize
+Default: 512
+Total limit (in kibibytes) for a single file.
+
+FileUpload.MaximumDecompressedMapFileSize
+Default: 512
+Total limit (in kibibytes) for a single uploaded map file after decompression.
+
+FileUpload.SizeLimitTotal
+Default: 102400
+Total limit (in kibibytes) for all user-uploaded files combined.
+
+FileUpload.SizeLimitGuest
+Default: 128
+Total number of kibibytes an unregistered user can have uploaded.
+
+FileUpload.SizeLimitUser
+Default: 128
+Total number of kibibytes a user can have uploaded.
+
+FileUpload.SizeLimitTrustedUser
+Default: 5120
+Total number of kibibytes a trusted user can have uploaded.
+
+FileUpload.SizeLimitOverride
+Default: {}
+Dictionary where each key is a lowercased username, and each value is the total size in kibibytes that user can have uploaded.
+
+FileUpload.AllowedFileCount
+Default: 100
+Number of files each user is allowed to have uploaded at once.
+
+FileUpload.AllowedFolderCount
+Default: 100
+Number of folders each user is allowed to have at once.
+
+FileUpload.AllowCrossOrigin
+Default: False
+Add CORS headers to the file upload API in order to allow accessing it when testing locally.
+
+FileUpload.AllowedFileExtensions
+Default: [".png", ".mod", ".s3m", ".xm", ".it", ".mptm", ".mp3", ".ogg", ".flac", ".wav"]
+Which file extensions can be uploaded. Must be lowercase.
+
+MaxProtocolSize.MSG
+Set a maximum number of characters that an incoming message of a given type is allowed to be.
+You can use any 3-character protocol message type here.
+
+MaxProtocolSize.Default
+Used for any types not set; many of them do have default sizes though (see buildglobal.py)
+
+MaxProtocolSize.Chat
+Maximum number of characters for the "text" field of MSG.
+
+MaxProtocolSize.Private
+Maximum number of characters for the "text" field of PRI. (or a message sent with /tell)
+
+MaxProtocolSize.Command
+Maximum number of characters for the "text" field of CMD.
+
+Scripting.Enabled
+Defaults to false, which will disable scripting
+
+Scripting.ProgramPath
+Path to a https://github.com/NovaSquirrel/TilemapTownScriptingService executable
+
+Scripting.DataStorageLimit
+Limit for how much persistent information each script is allowed to store
+
+MapPage.Enabled
+Default: true
+If true, enables the "map page" feature, where every map gets its own URL
+
+MapPage.TemplateFile
+Default: ""
+If provided, this is the filename of the HTML template that will be used for map pages
+
+MapPage.AssetsBaseURL
+Default: ""
+If provided, this is the base URL for any files that the map page template may need to reference (like JavaScript files or CSS). Expected to end in a slash.
+
+MapPage.PageBaseURL
+Default: ""
+Public base URL of the page, to have the map ID appended to it. Expected to end in a slash.
+
+.--------------------------------------------------------------------------------------------------
+| Resource files:
+'--------------------------------------------------------------------------------------------------
+These are JSON formatted files, which can contain images and tilesets.
+The client is given all of these upon connecting, with a "RSC" protocol message.
+
+Example:
+
+{
+	"build_categories": {
+		"Cool category": "food",
+		"Test category": ["purplesand", "brownsand"]
+	},
+	"image_names": {
+		"0": "Potluck",
+		"-1": "Extras"
+	},
+	"images": {
+		"0": "potluck.png",
+		"-1": "extra.png"
+	},
+	"tilesets": {
+		"": {
+			"grass": {
+				"name": "grass",
+				"pic": [0, 0, 4],
+				"density": false
+			},
+		},
+		"food": {
+			"pizza": {
+				"name": "pizza",
+				"pic": [-1, 5, 6],
+				"density": false,
+				"obj": true
+			}
+		}
+	}
+}
+
+This tells the client to preload two tileset images (with IDs 0 and -1), and provides filenames for them. The server will prefix these names with the ResourceIMGBase string from the config file before sending them to the client. Friendly names are also provided for the tile editor menu.
+
+The resource file also defines two tilesets, named "" and "food", and defines one tile each in them. If the client already has built-in tilesets with these names, they are overwritten with the server-provided ones.
+
+The special tileset name "" corresponds to the set of predefined tiles that show up in the build menu. This means that this resource file will overwrite the default predefined tile list the client has and replace it with this list that just contains a tile with ID "grass".
+
+Finally, two build categories are defined in addition to the default "Global tiles" and "My inventory" ones. This shows two different methods of defining build categories, where you can just define a category to be an entrie tileset (in this case "food") or actually explicitly list out tile identifiers.

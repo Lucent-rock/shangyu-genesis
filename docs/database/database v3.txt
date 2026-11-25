@@ -1,0 +1,285 @@
+https://www.sqlite.org/datatype3.html
+
+---META---
+item            - text    - what piece of meta information
+value           - text    - the value
+
+current items:
+version         - version of the database format, "3" currently
+
+
+---ENTITY--- (generic entity that can exist on a map, which can contain more information in other tables)
+General:
+	id              * integer - entity ID
+	owner_id        - integer - owner user ID
+	creator_id      - integer - creator user ID
+	created_at      -timestamp- time the entity was created 
+	acquired_at     -timestamp- time the owner was changed
+	type            - integer - type, also may suggest a table to look in
+		0 none
+		1 user       (USER table)
+		2 map        (MAP table)
+		3 group      (GROUP_MEMBER table)
+		4 text       (stores text, possibly a script. like notecards)
+		5 image      (links to a .png)
+		6 map_tile   (template for a tile that can be placed on a map)
+		7 tileset    (stores a description of the tiles in a tileset; used with TSD protocol messages)
+		8 reference  (refer to another entity)
+		9 folder     (for categorization; holds any number of other assets)
+		10 landmark  (holds a location and provides the ability to quickly teleport to it)
+		11 generic   (generic entity, used for things like props or puppets)
+		12 chatroom  (entity specifically made to be a chat)
+		13 gadget    (entity with built-in behavior)
+		14 client_data (entity made to be information to be used entirely client-side, like collections of commands, or collections of map tiles)
+
+	name            - text    - name (for display and disambiguation purposes, not to persistently identify a specific entity)
+	desc            - text    - description of the entity
+	pic             - text    - JSON describing the appearance - usually [tileset, x, y] or [url, 0, 0]. If null, a default is used.
+
+	flags           - integer - generic flags field
+		0x0001 don't load this entity when the container loads (unimplemented)
+		0x0002 this entity is public, and can be searched for (unimplemented)
+
+	data            - text    - data associated with the object, or NULL if not applicable.
+								takes advantage of SQLite being able to store text in an integer column
+								----
+								text: the text being stored
+							   image: path to the image, added to the server's base asset url?
+							  object: JSON object repesenting object information?
+							 tileset: JSON array alternating between tile id and compacted tile data
+						   reference: asset number it's a reference to
+							  folder: ?
+							landmark: map ID, x, y
+	compressed_data - blob    - data that has been compressed, where the original "data" field now specifies what compression algorithm is used.
+							Currently the only compression algorithm available is "zlib"
+	have_ext        - integer - entity has an ENTITY_EXT table row
+
+Position:
+	location        - integer - entity ID of whatever contains this entity - may be a map
+	position        - text    - JSON position within the container. Usually [x,y] or [x,y,dir] but it's flexible
+
+Home position:
+	home_location   - integer - entity ID of whatever is this entity's home location
+	home_position   - text    - JSON position within the container. Usually [x,y] or [x,y,dir] but it's flexible
+
+Permissions:
+	allow           - integer - default permissions to allow
+	deny            - integer - default permissions to deny
+	guest_deny      - integer - default permissions to deny for guests
+
+	Values:
+		0x00000001 entry (deny to ban a user)
+		0x00000002 build (or "modify" for things other than maps)
+		0x00000004 full sandbox (anyone can delete anything)
+		0x00000008 map admin (can do things that otherwise only map owners can, like kick or ban, but not things that are truly owner only)
+		0x00000010 make copies of this entity
+		0x00000020 map bot (can operate on map remotely)
+		0x00000040 move this entity within the container
+		0x00000080 move this entity onto another map
+		0x00000100 for maps: bulk build (can use the BLK command)
+		       for groups: anyone can get a list of the members
+		0x00000200 allowed to bring non-player entities here temporarily
+		0x00000400 allowed to bring non-player entities here persistently (if not, they'll be kicked out when the map unloads)
+		0x00000800 allowed to modify properties on this entity
+		0x00001000 allowed to make this entity do arbitrary commands
+		0x00002000 allowed to change visual properties, like picture or description 
+		0x00004000 allowed to look at the contents of the entity
+		0x00008000 user can set the owner of any of their entities to this entity
+		0x00010000 allowed to set a topic on this map
+		0x00020000 user is allowed to send chat to this entity, and listen to chat in this entity
+
+
+---ENTITY_EXT---
+	id              * integer - entity ID
+	extra_url       - string  - extra URL, usually the one that's associated with the tile's mini tilemap, if it has one
+
+	forward_messages_to - ID  - user to forward messages to
+	
+	tags            - text    - JSON object that holds tags (metadata tags like species, pronouns, etc.)
+	compressed_tags - blob    - tags that have been compressed, where the original "tags" field now specifies what compression algorithm is used
+
+	misc            - text    - miscellaneous data as a JSON object; possible fields:
+	                          - "offset" - list of [offset X, offset Y]
+	                          - "forward_message_types" - string - types of messages that should be forwarded; JSON array
+	                          - "status" - string - status to show in the user list
+	                          - "status_message" - string - status message to show in the user list
+	compressed_misc - blob    - misc data that has been compressed, where the original "misc" field now specifies what compression algorithm is used
+
+
+---PERMISSION---
+subject_id      * integer - ENTITY that the permissions apply to
+actor_id        * integer - ENTITY that is allowed, or not allowed, to do these things to the entity specified in "subject_id"
+allow           - integer - bit field for what extra permissions to allow
+deny            - integer - bit field for what extra permissions to deny
+
+
+---MAP---
+entity_id       - integer - ENTITY id corresponding to this map
+flags           - integer - generic flags field
+							  - 1: (public) map shows up in searches
+map_search_flags- integer - flags that a user could search for
+start_x         - integer - player starting X
+start_y         - integer - player starting Y
+width           - integer - map width
+height          - integer - map height
+default_turf    - text    - default map tile
+misc            - text    - JSON object; place to add additional fields without needing to change the database table yet
+
+
+---USER--- (a user account)
+entity_id       * integer - ENTITY id corresponding to this user
+last_seen_at    -timestamp- last seen date
+
+name            - text    - separate display name, for situations like messaging mode
+username        - text    - username
+passhash        - text    - password hash (may be "hash" or "salt:hash")
+passalgo        - text    - password algorithm name
+
+watch           - text    - JSON array of users to watch for
+ignore          - text    - JSON array of users to ignore messages from
+client_settings - text    - whatever the client wants to store (like settings)
+misc            - text    - JSON object; place to add additional fields without needing to change the database table yet
+
+flags           - integer - user-specific flags
+	0x00000001 is a bot
+	0x00000002 larger file upload limits
+	0x00000004 don't produce build logs when this user builds
+	0x00000008 don't show this user's location in the API or /whereare
+	0x00000010 don't show this user at all in the API
+	0x00000020 don't allow adding this user to your watch list
+	0x00000040 don't include this user's pic and desc when their information is viewed remotely (as in a BAG info message)
+	0x00000080 user is a trusted builder, and will still be able to build if building is locked down
+	0x00000100 user can run scripts
+	0x00000200 never convert offline messages sent or received to mail
+	0x80000000 user's account can't be logged into currently
+
+
+---MAIL---️
+id              * integer - mail id
+owner_id        - integer - ID of the user whose account the mail is sitting in
+sender_id       - integer - ID of the user who sent the mail (sender ID)
+recipients      - text    - comma separated list of all recipients' user IDs, including the one for this copy of the mail
+flags           - integer - current mail status
+                            0: Unread
+                            1: Read
+                            2: Your own copy of mail you sent someone else
+created_at      -timestamp- time the mail was sent
+subject         - text    - subject line of the mail
+contents        - text    - mail text
+compressed_contents - blob- data that has been compressed, where the original "contents" field now specifies what compression algorithm is used.
+                            Currently the only compression algorithm available is "zlib"
+
+
+---SERVER_BAN---
+id              * integer - ban ID
+ip              - text    - IP that was banned
+ip4_1           - text    - first part of IPv4 address
+ip4_2           - text    - second part of IPv4 address
+ip4_3           - text    - third part of IPv4 address
+ip4_4           - text    - fourth part of IPv4 address
+ip6_1           - text    - IPv6 address (part 1)
+ip6_2           - text    - IPv6 address (part 2)
+ip6_3           - text    - IPv6 address (part 3)
+ip6_4           - text    - IPv6 address (part 4)
+ip6_5           - text    - IPv6 address (part 5)
+ip6_6           - text    - IPv6 address (part 6)
+ip6_7           - text    - IPv6 address (part 7)
+ip6_8           - text    - IPv6 address (part 8)
+account         - id      - account that was also banned (unused)
+admin_id        - id      - id of the admin doing the banning
+created_at      -timestamp- time the ban was applied
+expires_at      -timestamp- when ban expires
+reason          - text    - ban reason
+private_note    - text    - private ban reason/note
+
+
+---GROUP_MEMBER---
+group_id        * integer - ENTITY id for the group
+member_id       * integer - entity ID of the player that's in the group
+created_at      -timestamp- when the invite was made, so that it can be deleted if it's been too long
+accepted_at     -timestamp- when the invite was accepted; null if it hasn't been accepted
+flags           - integer - bitfield of group permissions
+                            1:  can invite members
+                            2:  can remove members
+
+
+---GLOBAL_ENTITY_KEY--- (gives an entity a name that it can be referred to from anywhere)
+entity_id       * integer - ENTITY id that's being referred to here
+key             - text    - Name to refer to this entry with
+flags           - integer - Not used yet
+
+
+---USER_FILE_UPLOAD---
+file_id         * integer - ID for the file
+user_id         * integer - user who owns this file
+created_at      -timestamp- when the file was created
+updated_at      -timestamp- when the file was updated
+name            - text    - user-given name for the file
+desc            - text    - user-given description for the file
+location        - integer - user folder this file is stored in, or null
+size            - integer - size in bytes of the uploaded file
+filename        - text    - filename within the filesystem
+flags           - integer - currently not used
+hash            - string  - algorithm:hash, probably with sha256 as the algorithm
+
+
+---USER_FILE_FOLDER---
+folder_id       * integer - ID for the folder
+user_id         * integer - user who owns this file
+name            - text    - user-given name for the file
+desc            - text    - user-given description for the file
+location        - integer - folder this folder is stored in, or null
+flags           - integer - currently not used
+
+
+---USER_PROFILE---
+user_id         * integer - user this profile is for
+updated_at      -timestamp- last time this profile was updated
+name            - text    - display name for the user, separate from the current character's name
+text            - text    - profile text (with bbcode support)
+pronouns        - text    - user's own pronouns, which may be different from their current character's
+picture_url     - text    - URL for an avatar of the user
+birthday        - text    - YYYY-MM-DD format; may just be YYYY-MM or YYYY
+
+interests       - text    - comma separated interests list (arbitrary text)
+interest_flags  - integer - bitfield of things that the user likes to do, relating to Tilemap Town (tentative)
+                            0x00000001: Building
+                            0x00000002: Exploring
+                            0x00000004: Creating maps
+                            0x00000008: Chatting
+                            0x00000010: Event planning
+                            0x00000020: Pixel art (general)
+                            0x00000040: Pixel art (characters)
+                            0x00000080: Pixel art (tiles)
+                            0x00000100: Roleplaying (general)
+                            0x00000200: Roleplaying (hanging out in-character)
+                            0x00000400: Roleplaying (elaborate ongoing stories)
+                            0x00000800: Roleplaying (freeform)
+                            0x00001000: Roleplaying (with an RPG system)
+                            0x00002000: Roleplaying (game mastering)
+                            0x00004000: Roleplaying (adult)
+                            0x00008000: Playing minigames
+                            0x00010000: Making minigames
+                            0x00020000: Development (general)
+                            0x00040000: Development (scripting)
+                            0x00080000: Development (bots)
+                            0x00100000: Development (custom clients)
+                            0x00200000: Development (Tilemap Town itself)
+                            0x00400000: Creating music
+                            0x00800000: DJing
+interest_flags2 - integer - more flags, if needed
+
+looking_for     - text    - what the user is currently looking for (arbitrary text)
+
+email           - text    - email address
+website         - text    - URL of the user's website
+contact         - text    - JSON list; additional contact details; alternating key/value
+
+home_location   - integer - entity ID of whatever is this entity's public home location
+home_position   - text    - JSON position within the container. [x,y]
+
+misc            - text    - JSON object; place to add additional fields without needing to change the database table yet
+extra_fields    - text    - JSON list; additional custom text fields to display as-is, like Mastodon; alternating key/value
+flags           - integer - bitfield
+                            1: hide birthday except age
+                            2: hide email

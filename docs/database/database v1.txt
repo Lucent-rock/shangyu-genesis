@@ -1,0 +1,157 @@
+https://www.sqlite.org/datatype3.html
+
+---META---
+item            - text    - what piece of meta information
+value           - text    - the value
+
+current items:
+version         - version of the database format, "1" while it's being worked out
+
+
+---MAP---
+mid             * integer - map ID
+name            - text    - map name
+desc            - text    - map description
+owner           - integer - owner ID
+flags           - integer - generic flags field
+                          - 1: (public) map shows up in searches
+regtime         - integer - registration time
+start_x         - integer - player starting X
+start_y         - integer - player starting Y
+width           - integer - map width
+height          - integer - map height
+default_turf    - text    - default map tile
+tags            - text    - map tags as JSON
+allow           - integer - default permissions to allow
+deny            - integer - default permissions to deny
+guest_deny      - integer - default permissions to deny for guests
+data            - text    - actual map data
+
+Permissions:
+0x0001 entry (deny to ban a user)
+0x0002 build
+0x0004 full sandbox (anyone can delete anything)
+0x0008 map admin
+0x0010 bulk build (can use the BLK command)
+0x0020 map bot (can operate on map remotely)
+0x0040
+0x0080
+
+
+---MAP_PERMISSION---
+mid             * integer - map ID
+uid             * integer - user ID
+allow           - integer - flags that grant permissions
+deny            - integer - flags that deny permissions
+
+---MAP_LOG---
+lid             * integer - log item ID
+time            - timestamp - action time
+mid             - integer - map ID
+uid             - integer - user ID
+action          - text    - action taken
+info            - text    - additional information?
+
+---USER---
+uid             * integer - user ID
+
+passhash        - text    - password hash
+passalgo        - text    - password algorithm name
+
+regtime         - integer - register time
+lastseen        - integer - last seen date
+
+watch           - text    - JSON array of users to watch for
+ignore          - text    - JSON array of users to ignore messages from
+
+username        - text    - username
+name            - text    - display name
+pic             - text    - picture JSON
+
+mid             - integer - map the user is on
+map_x           - integer - user map X
+map_y           - integer - user map Y
+
+client_settings - text    - whatever the client wants to store
+flags           - integer - generic flags field
+tags            - text    - user tags as JSON
+
+
+---ASSET_INFO---
+aid             * integer - asset ID
+name            - text    - name of asset
+desc            - text    - description
+type            - integer - type of asset
+                            0 dummy     (nothing?)
+                            1 text      (stores text, possibly a script. like notecards)
+                            2 image     (links to a .png)
+                            3 object    (physical world object)
+                            4 tileset   (stores a description of the tiles in a tileset)
+                            5 reference (refer to another asset without taking up extra database space)
+                            6 folder    (for categorization; holds any number of other assets)
+flags           - integer - generic flags
+creator         - integer - creator ID
+regtime         - integer - creation time
+owner           - integer - owner ID (whose inventory it shows up in)
+folder          - integer - folder the asset is being held in, or null
+data            - integer - the data, or NULL if not applicable.
+                            takes advantage of SQLite being able to store text in an integer column
+                            ----
+                            text: the text being stored
+                           image: path to the image, added to the server's base asset url?
+                          object: JSON object repesenting object information?
+                         tileset: JSON array alternating between tile id and compacted tile data
+                       reference: asset number it's a reference to
+                          folder: ?
+
+---MAIL---
+id              * integer - mail id
+uid             - integer - ID of the user whose account the mail is sitting in
+sender          - integer - ID of the user who sent the mail (sender ID)
+recipients      - text    - comma separated list of all recipients, including the one for this copy of the mail
+flags           - integer - flags (bit 0 = read)
+time            - timestamp - time the mail was sent
+subject         - text    - subject line of the mail
+contents        - text    - mail text
+
+---SERVER_BAN---
+id              * integer - ban ID
+ip              - text    - IP that was banned
+ip1             - text    - first part of IP address
+ip2             - text    - second part of IP address
+ip3             - text    - third part of IP address
+ip4             - text    - fourth part of IP address
+account         - id      - account that was also banned (unused)
+admin           - id      - id of the admin doing the banning
+time            - timestamp - time the ban was applied
+expiry          - timestamp - when ban expires
+reason          - text    - ban reason
+
+
+
+
+---GROUP_MAP_PERMISSION---
+mid             * integer - map ID
+gid             * integer - group ID
+allow           - integer - flags that grant permissions
+
+---GROUP_INVITE---
+gid             * integer - group ID
+uid             * integer - user ID
+
+---GROUP_MEMBER---
+gid             * integer - group ID
+uid             * integer - user ID
+flags           - integer - bitfield of group permissions
+                            1:  can invite members
+                            2:  can remove members
+---USER_GROUP---
+gid             * integer - group ID
+name            - text    - group name
+desc            - text    - group description
+regtime         - timestamp - date of group founding
+owner           - integer - user ID
+joinpass        - text    - password to join the group, if there is one
+flags           - integer - group flags
+                            1: this group is public
+                            2: anyone can view a list of group's members

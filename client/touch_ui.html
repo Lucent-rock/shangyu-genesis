@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tilemap Town (for phones)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<link rel="canonical" href="https://tilemap.town/touch_ui">
+<link rel="manifest" href="img/pwa/tilemaptown_touch.webmanifest">
+<meta property="og:title" content="Tilemap Town touch client">
+<meta property="og:site_name" content="Tilemap Town">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tilemap.town/touch_ui">
+<meta property="og:description" content="Collaborative map building and chat">
+<meta property="og:image" content="https://tilemap.town/img/pwa/icon-512.png">
+<!-- Resources -->
+<link rel="stylesheet" type="text/css" href="css/world.css" />
+<link rel="stylesheet" type="text/css" href="css/chat.css" />
+<link rel="stylesheet" type="text/css" href="css/xbbcode.css" />
+<link rel="stylesheet" type="text/css" href="css/touch_ui.css" />
+<script src="js/stretch.js"></script>
+<script src="js/xbbcode.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/input.js"></script>
+<script src="js/draw_map.js"></script>
+<script src="js/map.js"></script>
+<script src="js/online.js"></script>
+<script src="js/touch_ui.js"></script>
+<script src="js/custom_code.js"></script>
+</head>
+<body onLoad="initTouchUI();" ondragstart="return false;" ondrop="return false;">
+<!-- Image resources -->
+<img src="img/tileset/webclient.png"  style="display: none;" id="webclientGraphics">
+<img src="img/tileset/global.png"     style="display: none;" id="global">
+<img src="img/tileset/npc.png"        style="display: none;" id="npc">
+<img src="img/tileset/pulp.png"       style="display: none;" id="pulp">
+<img src="img/tileset/easyrpg_v2.png" style="display: none;" id="easyrpg">
+<img src="img/tileset/shadows.png"    style="display: none;" id="shadows">
+<img src="img/tileset/extra_v2.png"   style="display: none;" id="extra">
+<img src="img/font/chicago.png"       style="display: none;" id="chicago">
+<img src="img/font/tomthumb.png"      style="display: none;" id="tomthumb">
+<img src="img/font/tilemapsans.png"   style="display: none;" id="tilemapsans">
+<noscript>The Tilemap Town web client requires JavaScript</noscript>
+<template id="widget-window-template">
+  <style>
+    #container {
+        position: absolute;
+        background-color: white;
+
+        left: 100px;
+        top: 100px;
+
+        min-width: 250px;
+
+        border-radius: 4px;
+        border: 1px solid black;
+    }
+
+    #contents {
+        padding: 2px;
+
+        max-height: 400px;
+        overflow: auto;
+    }
+
+    .draghandle {
+        cursor: move;
+        width: 100%;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+
+        line-height: 24px;
+        height: 24px;
+
+        user-select: none;
+
+        border-radius: 4px 4px 0 0;
+    }
+
+    .widget-minimize {
+        position: absolute;
+        right: 1px;
+        top: 1px;
+
+        border: 1px solid black;
+        border-radius: 4px;
+
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+
+        cursor: pointer;
+    }
+
+    .widget-minimize:hover {
+        background-color: lightpink;
+    }
+  </style>
+  <div id="container">
+    <div class="draghandle" id="draghandle">
+      <slot name="title"></slot>
+      <div id="minimize" class="widget-minimize">-</div>
+    </div>
+    <div id="contents">
+      <slot name="contents">Empty widget!</slot>
+    </div>
+  </div>
+</template>
+
+<template id="widget-contextmenu-template">
+  <style>
+    #container {
+        background-color: white;
+
+        border: 1px solid black;
+    }
+
+    #contents {
+        padding: 2px;
+    }
+  </style>
+  <div id="container">
+    <slot id="menu" name="menu">Empty context menu!</slot>
+  </div>
+</template>
+
+<!-- Wrapper everything is contained inside; takes up the entire screen -->
+<div id="wrapper">
+
+<!-- Menu bar -->
+<ul class="topnav unselectable">
+  <li><a id="navcustomize" href="#" onclick="viewCustomize();" title="Customize"><div style="width:16px; height:16px; background: url(img/tileset/webclient.png);"></div></a></li>
+  <li><a id="navmail"      href="#" onclick="viewMail();" title="Mail">Mail</a></li>
+  <li><a id="navusers"     href="#" onclick="viewUsers();">Users</a></li>
+  <li><a id="navmap"       href="#" >Map</a></li>
+  <li><a id="navchatlog"   href="#" onclick="viewChatLog();" title="Chat Log">Chat Log</a></li>
+  <li><a id="navbuild"     href="#" onclick="viewBuild();">Build</a></li>
+  <li><a id="navinventory" href="#" onclick="viewInventory();" title="Inventory">Inventory</a></li>
+  <li><a id="navfiles"     href="#" onclick="viewFiles();" title="Files">Files</a></li>
+  <li><a id="navoptions"   href="#" onclick="viewOptions();">Options</a></li>
+  <li><a id="navlogin"     href="#">Login</a></li>
+  <li><a id="navhelp"      href="https://wiki.novasquirrel.com/index.php?title=Tilemap_Town" target="_blank" title="Wiki">Wiki</a></li>
+</ul>
+
+<div id="loginWindow" class="modal">
+	<div class="modal-content">
+		<span class="modalclose">&times;</span>
+		<h1>Log into <a href="index.html">Tilemap Town</a></h1>
+
+		<div style="border: 1px solid black; padding: 12px; width: fit-content;">
+			<button id="loginHelpAccountButton" onclick="loginHelpAccount()">I already have an account</button>
+			<button id="loginHelpGuestButton" onclick="loginHelpGuest()">I'd like to log in as a guest</button>
+
+			<p>
+			<span id="loginUserSpan" style="display: none;"><input type="text" id="loginuser" oninput="loginHelpEnableDisableConnect()" placeholder="Username"> Username<br></span>
+			<span id="loginNickSpan" style="display: none;"><input type="text" id="loginnick" placeholder="Nickname"> Nickname (optional)<br></span>
+			<span id="loginPassSpan" style="display: none;"><input type="password" id="loginpass" oninput="loginHelpEnableDisableConnect()" placeholder="Password"> Password<br></span>
+			<span id="loginButtonSpan" style="display: none;"><input type="button" id="connectButton" value="Connect" style="width: 20em;" onclick="loginButton();"></span>
+			</p>
+			<div id="loginInstructionsGuest" style="display: none;">After you connect, you can create an account with<br><span class="xbbcode-code">/register username password</span></div>
+		</div>
+		<span id="loginServerSpan" style="display: none;"><p><details><summary class="unselectable">Connection options</summary><table><tr><td>Server:</td><td><input type="text" id="loginserver" value="wss://shangyu-genesis-ws.onrender.com/ws/" placeholder="tilemap.town/ws/"></td></tr><tr><td>Map ID:</td><td><input type="text" id="loginMapID"></td></tr></table></details></p></span>
+<!-- syjt-wake-hint -->
+<p style="border:1px solid #b36b00;background:#fff8e6;padding:8px;max-width:44em;">Render 免费实例休眠后首次连接可能需要 30–60 秒；若提示连接失败，请稍等后点 Connect 重试。</p>
+		<p id="passwordResetHint" style="display:none;">
+		<span id="loginErrorText" style="font-weight: bold;"></span><br>
+		<p id="passwordResetHint" style="display:none;">
+		<span id="loginErrorText" style="font-weight: bold;"></span><br>
+		If you need a password reset, you can <a href="https://novasquirrel.com/contact.html">contact Tilemap Town's developer</a>.
+		</p>
+	</div>
+</div>
+
+<div id="mapOptionsWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>Map</h1>
+
+    <div id="map_window_online" style="display: none;">
+    <table border="0">
+    <tr>
+    <td><label for="mapname" class="unselectable">Map name</label></td>
+    <td><input type="text" id="mapname"/></td>
+    </tr>
+    <tr>
+    <td><label for="mapdesc" class="unselectable">Description</label></td>
+    <td><textarea id="mapdesc"></textarea></td>
+    </tr>
+    <tr>
+    <td><label for="mapowner" class="unselectable">Map owner</label></td>
+    <td><input type="text" id="mapowner" disabled/></td>
+    </tr>
+    <tr>
+    <td><label for="mapid" class="unselectable">Map ID</label></td>
+    <td><input type="text" id="mapid" disabled/></td>
+    </tr>
+    </table>
+
+    <p>
+	<button onclick="sendChatCommand('mapspawn')">Set start position here</button>
+	<button onclick="runLocalCommand('/exportmap')">Export map as a file</button>
+	<a id="shareMapLink" href="" target="_blank">Share this map online</a>
+    </p>
+	<p id="importOnlineMapInput"><input type="file" id="import_online_map_file" /><br><button onclick="importOnlineMap()">Import map</button> - Importing will overwrite the map you're currently on.</p>
+
+    <p>
+    <h2>Permissions</h2>
+    <table border="0">
+    <tr><td>Privacy</td><td><select id="mapprivacy">
+      <option value="public">Public</option>
+      <option value="unlisted">Unlisted</option>
+      <option value="private">Private</option>
+      <option value="?">Keep the same</option>
+    </select></td></tr>
+	</table>
+
+	<p>
+	Anyone can:
+	<label class="unselectable">Build: <input type="checkbox" id="permission_build"></label>
+	| <label class="unselectable">Bring objects: <input type="checkbox" id="permission_object_entry"></label>
+	| <label class="unselectable">Leave objects here: <input type="checkbox" id="permission_persistent_object"></label>
+	| <label class="unselectable">Set topics: <input type="checkbox" id="permission_topic"></label>
+	</p>
+
+    <p>
+    <button onclick="applyMapWindowChanges()">Apply changes</button>
+    <button onclick="cancelMapWindowChanges()">Cancel</button>
+    </p>
+    </div>
+
+	<div id="map_window_offline">
+	You're offline! You can still make maps by yourself and save them to your device.
+
+	<p>
+	<input type="number" value="100" min="10" max="200" id="localMapWidth" size="4" />&times;<input type="number" value="100" min="10" max="200" id="localMapHeight" size="4" /> <button onclick="resizeLocalMap()">Resize map</button> | <button onclick="clearLocalMap()">Clear map</button>
+	</p>
+
+	<p>
+	<strong>Locally stored maps:</strong><br>
+	<input placeholder="Map name" id="localMapName"> <button onclick="saveLocalMap()">Save</button><br>
+	<select id="localMapList"></select> <button onclick="loadLocalMap()">Load</button> | <button onclick="deleteLocalMap()">Delete</button>
+	</p>
+
+	<p>
+	<strong>Import/Export:</strong><br>
+	<input type="file" id="importmapfile" /><br><button onclick="importLocalMap()">Import map</button><br><br>
+	<button onclick="runLocalCommand('/exportmap ' + document.getElementById('localMapName').value)">Export map</button>
+	</p>
+
+	</div>
+
+  </div>
+</div>
+
+<div id="newItemWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>New item</h1>
+
+    <p>
+	<table>
+	<tr><td>
+    <label for="newtilename" class="unselectable">Item name</label><br>
+    <input type="text" id="newtilename" value="new item"/>
+	</td><td><label class="unselectable"><input type="checkbox" id="createtempobject">Create as temporary entity</label></td></tr>
+	</table>
+    </p>
+
+	<p>
+	<table>
+	<tr><th colspan="2">Building tools</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -64px -32px;"> <input type="button" value="Map tile" onclick="newItemCreate('map_tile');" /></td><td>Stores properties for one custom map tile.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -64px -32px;"> <input type="button" value="Map tile list" onclick="newItemCreate('map_tile_list');" /></td><td>Stores properties for multiple custom map tiles.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -32px -16px;"> <input type="button" value="Tile sheet" onclick="newItemCreate('image');" /></td><td>Stores an image URL; allows you to use that image in custom tiles. See <a href="https://wiki.novasquirrel.com/index.php?title=Tile_sheet_(Tilemap_Town)" target="_blank">the wiki</a>.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -80px -16px;"> <input type="button" value="Tileset definition" onclick="newItemCreate('tileset');" /></td><td>Like map tile lists, but updating the item updates placed tiles. See <a href="https://wiki.novasquirrel.com/index.php?title=Saving_a_list_of_map_tiles" target="_blank">the wiki</a>.</td></tr>
+	<tr><th colspan="2">Toys and props</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) 0px -16px;"> <input type="button" value="Generic" onclick="newItemCreate('generic');" /></td><td>No special behavior. Can be dropped on a map as a prop.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -48px -32px;"> <input type="button" value="Doodle board" onclick="newItemCreate('doodle_board');" /></td><td>Art canvas that you can drop onto a map and draw on.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -48px -16px;"> <input type="button" value="Gadget" onclick="newItemCreate('gadget');" /></td><td>Items with server-side interaction. Draggable entities, projectile shooters, etc.</td></tr>
+	<tr><th colspan="2">Other items</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -16px -16px;"> <input type="button" value="Text" onclick="newItemCreate('text');" /></td><td>Can store notes or other text.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) 0px -32px;"> <input type="button" value="Folder" onclick="newItemCreate('folder');" /></td><td>Organization for items.</td></tr>
+	<tr><td><img src="img/transparent.png" width="16" height="16" style="background: url(img/tileset/webclient.png) -64px -16px;"> <input type="button" value="Command list" onclick="newItemCreate('command_list');" /></td><td>Stores useful commands for quick access.</td></tr>
+	</table>
+	</p>
+    </p>
+
+    <p>
+    <input type="button" value="Cancel" onclick="newItemCancel();" />
+    </p>
+  </div>
+</div>
+
+<div id="newFileWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>New file</h1>
+
+    <p>
+    <input type="file" id="newfilefile" accept="image/png,.mod,.s3m,.xm,.it,.mptm" />
+    </p>
+
+    <p>
+    <label for="newfilename" class="unselectable">File name</label><br>
+    <input type="text" id="newfilename" value="Image"/>
+    </p>
+
+    <p>
+    <label for="newfiledesc" class="unselectable">File description</label><br>
+    <textarea id="newfiledesc"></textarea>
+    </p>
+
+	How would you like to use this file?<br>
+	<table>
+	<tr><td>Map tile graphics:</td><td><input type="button" value="Upload and create tile sheet item" onclick="createNewFile(false, true);" /></td></tr>
+	<tr><td>Avatar graphics:</td><td><input type="button" value="Upload and set appearance" onclick="createNewFile(true, false);" /></td></tr>
+	</table>
+    Otherwise you can just <input type="button" value="Upload file" onclick="createNewFile(false, false);" /><br>
+    <br>
+    
+    </p>
+    <p>
+    <input type="button" value="Cancel" onclick="newFileCancel();" />
+    </p>
+  </div>
+</div>
+
+<div id="newFolderWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>New folder</h1>
+
+    <p>
+    <label for="newfoldername" class="unselectable">Folder name</label><br>
+    <input type="text" id="newfoldername" value="new item"/>
+    </p>
+
+    <p>
+    <label for="newfolderdesc" class="unselectable">Folder description</label><br>
+    <textarea id="newfolderdesc"></textarea>
+    </p>
+
+    <input type="button" value="Create folder" onclick="createNewFolder();" />
+    </p>
+    <p>
+    <input type="button" value="Cancel" onclick="newFolderCancel();" />
+    </p>
+  </div>
+</div>
+
+<div id="editFileWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>Edit file</h1>
+
+    <p>
+    <input type="file" id="editfilefile" accept="image/png" />
+    </p>
+
+    <p>
+    <label for="editfilename" class="unselectable">File name</label><br>
+    <input type="text" id="editfilename" value="Image"/>
+    </p>
+
+    <p>
+    <label for="editfiledesc" class="unselectable">File description</label><br>
+    <textarea id="editfiledesc"></textarea>
+    <button id="copyExtPicToFileDescButton" onclick="copyExtPicToFileDesc()">Copy extended<br>avatar info here</button>
+    </p>
+
+	
+    <input type="button" value="Only edit name and description" onclick="doEditFile(false, false, false);" />
+	<p>
+    <input type="button" value="Reupload file" onclick="doEditFile(true, false, false);" /><br>
+    <input type="button" value="Reupload file and set appearance" onclick="doEditFile(true, true, false);" /><br>
+    <input type="button" value="Reupload file but keep URL" onclick="doEditFile(true, false, true);" />
+	</p>
+    </p>
+    <p>
+    <input type="button" value="Cancel" onclick="editFileCancel();" />
+    </p>
+  </div>
+</div>
+
+<div id="editFolderWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>Edit folder</h1>
+
+    <p>
+    <label for="editfoldername" class="unselectable">Folder name</label><br>
+    <input type="text" id="editfoldername" value="new item"/>
+    </p>
+
+    <p>
+    <label for="editfolderdesc" class="unselectable">Folder description</label><br>
+    <textarea id="editfolderdesc"></textarea>
+    </p>
+
+    <input type="button" value="Edit folder" onclick="doEditFolder();" />
+    </p>
+    <p>
+    <input type="button" value="Cancel" onclick="editFolderCancel();" />
+    </p>
+  </div>
+</div>
+
+<div id="itemEditTilePickerWindow" class="modal">
+  <div class="modal-content">
+    <span class="modalclose">&times;</span>
+    <p>
+    <h1>Pick a tile:</h1>
+    <div id="itemEditTilePickerWindowDiv">
+    <img id="itemEditTilePickerWindowImg">
+    </div>
+    </p>
+  </div>
+</div>
+
+<widget-window id="selectionInfo" style="display: none;">
+  <span slot="title">Selection Info</span>
+  <div slot="contents">
+    <div id="panel"></div>
+    <div>
+      <span id="deleteTurfObj">
+      <label><input type="checkbox" id="turfselect" checked="true">Tiles</label>
+      <label><input type="checkbox" id="objselect" checked="true">Objects</label>
+      <input type="button" value="&#x1F4A3;Delete" onclick="selectionDelete();">
+      </span>
+      <span id="getTileObjSpan">
+        <input type="button" value="&#x26F0;&#xFE0F;Copy Tile"    onclick="copyTurfFromSelection();">
+        <input type="button" value="&#x1F4CB;Copy Object"  onclick="copyObjFromSelection();">
+      </span>
+    </div>
+    <span id="selectedentities_span">
+      Selected Entities:
+      <ul id="selectedentitiesul" class="itemsul unselectable">
+      </ul>
+    </span>
+    <span id="selectedfloor_span">
+      Selected Floor:
+      <ul id="selectedfloorul" class="itemsul unselectable">
+      </ul>
+    </span>
+    <span id="selectedobjects_span">
+      Selected Objects:
+      <ul id="selectedobjectsul" class="itemsul unselectable">
+      </ul>
+    </span>
+  </div>
+</widget-window>
+
+<widget-window id="users" style="display: none;">
+  <span slot="title">Users</span>
+  <div slot="contents">
+    <label class="unselectable"><input type="checkbox" id="userlist_all_entities" onchange="updateUsersUL()">All entities</label>
+    <span id="userlist_span">
+      <hr><strong>Users</strong><br>
+      <ul id="usersul" class="itemsul unselectable"></ul>
+	</span>
+
+    <span id="chatlisteners_span">
+      <hr><strong>Chat listeners</strong><br>
+      <ul id="chatlistenerul" class="itemsul unselectable"></ul>
+    </span>
+
+    <span id="messageforward_span">
+      <hr><strong>Other listeners</strong><br>
+      <ul id="messageforwardul" class="itemsul unselectable"></ul>
+    </span>
+
+    <span id="otherentity_span">
+      <hr><strong>Other entities</strong><br>
+      <ul id="otherentityul" class="itemsul unselectable"></ul>
+    </span>
+  </div>
+</widget-window>
+
+<widget-window id="inventory" style="display: none;">
+  <span slot="title">Inventory</span>
+  <div slot="contents" id="inventory-contents">
+    <ul id="inventoryul" class="itemsul unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="build" style="display: none;">
+  <span slot="title">Build</span>
+  <div slot="contents" id="build-contents">
+
+	<table style="margin: auto;" id="buildToolSelectTable">
+	<tr>
+	<td><label class="unselectable"><input type="radio" id="buildToolSelect" name="buildTool" onchange="changeBuildTool();" checked>&#x1F50D;Select</label></td>
+	<td><label class="unselectable"><input type="radio" id="buildToolDraw"   name="buildTool" onchange="changeBuildTool();">&#x1F58C;&#xFE0F;Draw</label></td>
+	</tr>
+	</table>
+
+    <label class="unselectable">Category: <select id="buildToolCategory" onchange="changedBuildToolCategory();">
+      <option value="!global">Global tiles</option>
+      <option value="!inventory">My inventory</option>
+    </select></label>
+
+    <br>
+    <canvas class="unselectable" id="inventoryCanvas" width="320" height="320" imageSmoothingEnabled="false"></canvas>
+    <br>
+    <button onclick="sendChatCommand('undodel');">Undo delete</button>
+    <button onclick="undoDrawStroke();">Undo draw</button>
+    <label class="unselectable"><input type="checkbox" id="zoom-build-menu" onchange="buildMenuZoom()">Zoom</label>
+  </div>
+</widget-window>
+
+<widget-window id="options" style="display: none;">
+  <span slot="title">Options</span>
+  <div slot="contents">
+    <label class="unselectable"><input type="checkbox" id="audiochatnotify" checked>Notify when people talk</label><br>
+    <label class="unselectable"><input type="checkbox" id="audiomiscnotify">Notify on other messages</label><br>
+    <label class="unselectable"><input type="checkbox" id="audiomapmusic">Play map background music</label><br>
+    <label class="unselectable"><input type="checkbox" id="option-fly">Walk through walls</label><br>
+	<details class="options-section">
+		<summary class="unselectable">Map display options</summary>
+		<label class="unselectable"><input type="checkbox" id="option-entity-animation" checked>Entity animation</label><br>
+		<label class="unselectable"><input type="checkbox" id="option-tile-animation" checked>Tile animation</label><br>
+		<label class="unselectable"><input type="checkbox" id="enable-user-particles" checked>Show user particles</label><br>
+		<label class="unselectable"><input type="checkbox" id="lock-zoom-level">Lock zoom level</label><br>
+		<label class="unselectable"><input type="checkbox" id="alwayscenter" checked>Always center camera</label>
+		<p><label>Extended entity graphics:<br><select id="option-entity-ext-pic">
+			<option value="always">Enabled</option>
+			<option value="if48px">Show if &le;48px</option>
+			<option value="if32px">Show if &le;32px</option>
+			<option value="never">Disabled</option>
+		</select></label></p>
+	</details>
+	<details class="options-section">
+		<summary class="unselectable">Chat options</summary>
+		<label class="unselectable"><input type="checkbox" id="warn-invalid-bbcode" checked>Warn about invalid BBCode</label><br>
+		<label class="unselectable"><input type="checkbox" id="chat-timestamp" checked>Show chat timestamps</label><br>
+		<label class="unselectable"><input type="checkbox" id="chat-custom-name-colors" checked>Show custom name colors</label><br>
+		<label class="unselectable"><input type="checkbox" id="focus-map-after-chat">Refocus map after sending chat</label><br>
+		<label class="unselectable"><input type="checkbox" id="show-send-button">Chat send button</label><br>
+	</details>
+	<details class="options-section">
+		<summary class="unselectable">Automatic idle options</summary>
+		<label class="unselectable">Mark self as idle after <input type="number" id="minutes-until-idle" size="4" value="60"> minutes</label><br>
+		<label class="unselectable">Disconnect after <input type="number" id="minutes-until-disconnect" size="4" value="720"> minutes</label><br>
+		Disable by entering 0
+	</details>
+	<details class="options-section">
+		<summary class="unselectable">More options</summary>
+		<label class="unselectable"><input type="range" id="music-volume" name="music_volume" min="0" max="100" value="100" step="5" onchange="updateMapMusicVolume()" oninput="updateMapMusicVolume()" />Music volume</label><br>
+		<label class="unselectable"><input type="text" id="safe-for-command-lists" size="14" placeholder="map,userpic,roll">Safe for command lists</label>
+	</details>
+	<hr>
+
+    <ul>
+      <li>
+        Zoom level:
+
+        <input id="zoomout" type="button" onclick="zoomOut();" value="-">
+        <span id="zoomlevel">4.00x</span>
+        <input id="zoomin" type="button" onclick="zoomIn();" value="+">
+      </li>
+    </ul>
+
+    <input type="button" onclick="applyOptions(); viewOptions();" value="OK">
+    <input type="button" onclick="applyOptions();" value="Apply changes">
+    <input type="button" onclick="viewOptions();" value="Close options">
+  </div>
+</widget-window>
+
+<widget-window id="character" style="display: none;">
+  <span slot="title">Character Settings</span>
+  <div slot="contents">
+  <strong>Name:</strong><br>
+  <input type="text" placeholder="New name" id="newnick">
+  <input type="button" value="Rename" onclick="sendChatCommand('nick '+document.getElementById('newnick').value);"><br>
+  <input type="color" id="myNameColor"> <button onclick="setCustomNameColor();">Set name color</button> <button onclick="clearCustomNameColor();">Clear name color</button><br><br>
+
+  <strong>Status:</strong><br>
+  <select id="quickstatus">
+    <option value="">&#x2728;</option>
+    <option value="away">&#x1F343;Away</option>
+    <option value="busy">&#x1F697;Busy</option>
+    <option value="rp">&#x1F3AD;Roleplaying</option>
+    <option value="lfrp">&#x1F3AD;Looking to roleplay</option>
+    <option value="chat">&#x1F4AC;Chat with me!</option>
+    <option value="ooc">&#x1F9CD;Out of character</option>
+    <option value="dnd">&#x26D4;Do not disturb</option>
+  </select> <input id="quickstatustext" type="text" placeholder="Extra context" size="15" maxlength="50"> <button onclick="setUserStatusButton();">Set status</button>
+  <p><button onclick="SendCmd('EXT', { 'get_user_profile': {'username': PlayerYou} });">Set my user profile</button> <button onclick="SendCmd('EXT', { 'get_morph_list': {} });">Morph list</button></p>
+
+  <hr>
+  <p>
+    <strong>Sample avatars:</strong><br>
+    <input type="button" value="Bunny" onclick="sendChatCommand('userpic bunny');">
+    <input type="button" value="Cat" onclick="sendChatCommand('userpic cat');">
+    <input type="button" value="Hamster" onclick="sendChatCommand('userpic hamster');">
+    <input type="button" value="Fire" onclick="sendChatCommand('userpic fire');">
+    <input type="button" value="Snail" onclick="sendChatCommand('userpic snail');">
+    <input type="button" value="Turtle" onclick="sendChatCommand('userpic turtle');">
+    <input type="button" value="More!" onclick="morePresetAvatars();">
+  </p>
+
+  <p>
+    <strong>Custom avatar:</strong><br>
+    Paste a link to a PNG here to use a custom avatar.<br>
+    Registered users can <a href="#" onclick="viewFiles();">upload images</a> to the server.<br>Otherwise you may use <a href="https://filegarden.com/" target="_blank">File Garden</a>, <a href="https://imgbb.com/" target="_blank">ImgBB</a> or <a href="https://postimages.org/" target="_blank">Postimages</a>.<br>More image hosts can be added on request.<br>
+    <input type="url" placeholder="https://example.com/whatever.png" size="28" id="newcustompic">
+    <input type="button" value="Custom pic" onclick="sendChatCommand('userpic '+document.getElementById('newcustompic').value);">
+    <button onclick="openExtendedPicWindow(null)">Advanced setup</button>
+  </p>
+
+<!--
+        <input id="iconPicker" type="file" onchange="previewIcon();"><br>
+        <img id="iconPreview" src="" width="32" height="32" alt="Image preview"><br>
+        <input type="button" value="Use"><br>
+-->
+  </div>
+</widget-window>
+
+<widget-window id="ext-userpic-setup" style="display: none;">
+	<span slot="title" id="ext-userpic-setup-title">Character appearance setup</span>
+	<div slot="contents">
+	<div style="text-align:center;"><button onclick="resetSettingsPicWindow()">Reset</button> <button onclick="applySettingsPicWindow()" id="ext-userpic-setup-apply">Apply appearance</button><span id="ext-userpic-setup-entity-notice"><br>Edit settings here, and they'll show up<br>in the item edit window.<span></div>
+
+	<p>
+	<table border="1">
+	<caption style="caption-side:top;">Basic details</caption>
+	<tr><th>Basic URL</th><td><input type="url" placeholder="https://example.com/whatever.png" size="28" id="userpic-setup-basic-url"></td></tr>
+	<tr><th>Extended URL</th><td><input type="url" placeholder="https://example.com/whatever.png" size="28" id="userpic-setup-ext-url"></td></tr>
+	<tr><th>Frame size</th><td><input type="number" min="1" max="64" id="userpic-setup-frame-width" /> px &times; <input type="number" min="1" max="64" id="userpic-setup-frame-height" /> px</td></tr>
+	<tr><th>Typing symbol height</th><td><input type="number" min="0" max="64" id="userpic-setup-speech-height" /> px</td></tr>
+	<tr><th>Direction count</th><td>
+		<select id="userpic-setup-direction-count"><option value=""></option><option value="1">1</option><option value="2">2 (East, West)</option><option value="4">4 (Cardinal directions)</option><option value="8">8 (Cardinal + diagonal)</option></select>
+	</td></tr>
+	</table>
+	<details>
+	<summary class="unselectable">Explanation</summary>
+	<span class="column-of-text-in-window">Basic URL is used by clients that don't support or have disabled fancier avatars, or when someone sets a max frame size. Basic avatars always use 32x32 frames and have more limited animation controls.</span>
+	</details>
+	</p>
+
+	<p>
+	<table border="1">
+	<caption style="caption-side:top;">Animation details</caption>
+	<tr><th></th><th>Idle</th><th>Move</th></tr>
+	<!--<tr><th>Preview</th><td><canvas class="unselectable" id="userpic-setup-frame-preview-idle" width="64" height="64" style="border: solid 1px black;" imageSmoothingEnabled="false"></canvas></td><td><canvas class="unselectable" id="userpic-setup-frame-preview-move" width="64" height="64" style="border: solid 1px black;" imageSmoothingEnabled="false"></canvas></td></tr>
+	<tr><th colspan="3"><select id="userpic-setup-preview-direction" onchange="changePreviewPicWindow()"><option value="0">&#x2192; East</option><option value="1">&#x2198; South east</option><option value="2">&#x2193; South</option><option value="3">&#x2199; South west</option><option value="4">&#x2190; West</option><option value="5">&#x2196; North west</option><option value="6">&#x2191; North</option><option value="7">&#x2197; North east</option></select> <label>&#x1F4AC;<input id="userpic-setup-preview-speech" type="checkbox" onchange="changePreviewPicWindow()" checked /></label> <label>Extended: <input type="checkbox" id="userpic-setup-preview-extended" onchange="changePreviewPicWindow()" checked /></label></th></tr>-->
+	<tr><th>Frame count</th><td><input type="number" min="1" max="32" id="userpic-setup-frame-count-idle" /></td><td><input type="number" min="1" max="32" id="userpic-setup-frame-count-move" /></td></tr>
+	<tr><th>Frame duration</th><td><input type="number" min="1" max="32" id="userpic-setup-frame-duration-idle" /> &times; 0.1 sec</td><td><input type="number" min="1" max="32" id="userpic-setup-frame-duration-move" /> &times; 0.1 sec</td></tr>
+	<tr><th>Frame pattern</th><td><textarea rows="3" cols="15" id="userpic-setup-frame-pattern-idle"></textarea></td><td><textarea rows="3" cols="15" id="userpic-setup-frame-pattern-move"></textarea></td></tr>
+	</table>
+	<span class="column-of-text-in-window">Pattern is a comma-separated list of frame numbers (starting from 0).</span>
+	</p>
+
+	<details>
+	<summary class="unselectable">More options</summary>
+	<table border="1">
+	<tr><th>Move anim<br>duration</th><td><input id="userpic-setup-move-anim-time" /></th></tr>
+	<tr><th>X offset<br>per direction</th><td><input id="userpic-setup-x-offsets" placeholder="-4,4" /></th></tr>
+	<tr><th>Y offset<br>per direction</th><td><input id="userpic-setup-y-offsets" /></th></tr>
+	<tr><th>Z offset<br>per direction</th><td><input id="userpic-setup-z-offsets" /></th></tr>
+	</table>
+	</details>
+
+	<p id="ext-userpic-setup-json-section">
+	Extended appearance info in JSON format:<br><textarea cols="40" id="userpic-setup-raw"></textarea> <button onclick="applyJsonPicWindow()">Apply</button>
+	</p>
+
+	</div>
+</widget-window>
+
+<widget-window id="filelist" style="display: none;">
+  <span slot="title">File uploads</span>
+  <div slot="contents" id="filelist-contents">
+    <span id="filelist-status"></span>
+    <ul id="filesul" class="itemsul unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="tileset" style="display: none;">
+  <span id="tileset-title" slot="title">Tileset</span>
+  <div slot="contents">
+	<table style="margin: auto;" id="tilesetModeSelectTable">
+	<tr>
+	<td><label class="unselectable"><input type="radio" id="tilesetModeList" name="tilsetWindowMode" onchange="changeTilesetEditMode();" checked>List</label></td>
+	<td><label class="unselectable"><input type="radio" id="tilesetModeAddMultiple" name="tilsetWindowMode" onchange="changeTilesetEditMode();">Add multiple</label></td>
+	</tr>
+	</table>
+	<div id="tilesetModeListDiv">
+		<input placeholder="Search" id="tileset_search"><button onclick="editItemShared({'type':'tileset_new','name':'','desc':'','data':AtomFromName('grass')});">Add tile</button><br>
+		<label id="tilesetSortByIDLabel">Sort by ID: <input type="checkbox" id="tilesetSortByID" onchange="refreshTilesetList();"></label>
+		<ul id="tileset_ul" class="itemsul unselectable">
+		</ul>
+	</div>
+	<div id="tilesetModeAddMultipleDiv">
+		<table style="width: 600px; text-align: center;">
+		<tr>
+		<td>Tile sheet: <select id="tilesetModeAddMultipleSheetSelect" onchange="tilesetEditRerenderSheet();">
+		  <option value="0">Global</option>
+		  <option value="-1">Critters</option>
+		  <option value="-2">Pulp</option>
+		  <option value="-3">EasyRPG</option>
+		  <option value="custom">Custom</option>
+		</select></td>
+		<td><label class="unselectable"><input type="checkbox" id="tilesetModeAddMultipleZoom" onchange="tilesetEditRerenderSheet();">Zoom</label></td>
+		<td>Drag to select, then <button onclick="tilesetEditAddMultipleAdd();">Add</button> <button onclick="tilesetEditAddMultipleEdit();">Edit</button> <button onclick="tilesetEditAddMultipleDelete();">Delete</button></td>
+		</tr>
+		</table>
+
+		<div style="overflow:scroll; width:600px; height:256px;" id="tilesetModeAddMultipleSheetContainer">
+		<img src="" style="display:none;" id="tilesetModeAddMultipleSheetImage">
+	    <canvas class="unselectable" id="tilesetModeAddMultipleSheetCanvas" width="600" height="256" imageSmoothingEnabled="false"></canvas>
+		</div>
+
+		<table style="width: 600px; text-align: center;">
+		<tr>
+			<td colspan="2"><label for="tilesetModeAddMultipleName" class="unselectable">Name: <input type="text" id="tilesetModeAddMultipleName"/></label>
+			<label class="unselectable" title="Players will bump into the tile instead of moving through it"><input type="checkbox" id="tilesetModeAddMultipleDensity">Wall</label>
+			<label class="unselectable" title="Tile goes on the floor/turf layer, not the object layer"><input type="checkbox" id="tilesetModeAddMultipleFloorTile">Floor tile</label>
+			<label class="unselectable" title="Display this tile above players"><input type="checkbox" id="tilesetModeAddMultipleOver">Show above players</label>
+			<label class="unselectable" title="When adding multiple tiles, add row by row, instead of column by column"><input type="checkbox" id="tilesetModeAddMultipleRowMajor">&#x2192;</label>
+			</td>	
+		</tr>
+		<tr style="vertical-align: top;"><td style="width: 300px;">
+		<details id="tilesetModeAddMultipleSheetAutotileDetails">
+		<summary class="unselectable">Autotiling</summary>
+		<table border="0">
+		<tr><td>Type</td><td><select id="tilesetModeAddMultipleAutotileType">
+			<option value="0">None</option>
+			<option value="1">9 slice</option>
+			<option value="2">4 directions - Middle</option>
+			<option value="3">4 directions - Single</option>
+			<option value="4">RPG - Middle</option>
+			<option value="5">RPG - Single</option>
+			<option value="6">Horizontal - Middle 3</option>
+			<option value="7">Horizontal - Middle 4</option>
+			<option value="8">Horizontal - Single 4</option>
+			<option value="9">Vertical - Middle 3</option>
+			<option value="10">Vertical - Middle 4</option>
+			<option value="11">Vertical - Single 4</option>
+			<option value="12">Quarter 8-way - Middle (8)</option>
+			<option value="13">Quarter 8-way - Single (8)</option>
+			<option value="14">Quarter 8-way - Middle (16)</option>
+			<option value="15">Quarter 8-way - Single (16)</option>
+		</select></td></tr>
+		<tr><td>Class</td><td><input type="text" id="tilesetModeAddMultipleAutotileClass" placeholder="Autotile class" /></td></tr>
+		<tr><td>Class (edge)</td><td><input type="text" id="tilesetModeAddMultipleAutotileClassEdge" placeholder="Autotile class (edge)" /></td></tr>
+		</table>
+		</details>
+		</td>
+
+		<td style="width: 300px;">
+		<details id="tilesetModeAddMultipleAnimationDetails">
+		<summary class="unselectable">Animation</summary>
+		<table border="0">
+		<tr><td>Frames</td><td><input type="number" value="0" size="4" id="tilesetModeAddMultipleAnimationFrames" /></td></tr>
+		<tr><td>Frame duration</td><td><input type="number" value="0"  size="4" id="tilesetModeAddMultipleAnimationSpeed" /> &times; 0.1 sec</td></tr>
+		<tr><td>Start offset</td><td><input type="number" value="0" size="4" id="tilesetModeAddMultipleAnimationOffset" /> &times; 0.1 sec</td></tr>
+		<tr><td>Direction</td><td>
+		<select id="tilesetModeAddMultipleAnimationMode">
+			<option value="0">Forwards</option>
+			<option value="1">Backwards</option>
+			<option value="2">Ping-pong</option>
+			<option value="3">Ping-pong reverse</option>
+			<option value="4">Random frames</option>
+		</select></td></tr>
+		</table>
+		</details>
+		</td></tr>
+		</table>
+	</div>
+  </div>
+</widget-window>
+
+<widget-window id="premadeavatarlist" style="display: none;">
+  <span slot="title">Sample avatars</span>
+  <div slot="contents" id="premadeavatarlist-contents">
+    Click an avatar to switch to it:<br>
+    <ul id="premadeavatarul" class="itemsul unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="morphlist" style="display: none;">
+  <span id="morphlist-title" slot="title">Morph list</span>
+  <div slot="contents" id="morphlist-contents">
+    Click a morph to switch to it.<br>
+    <button onclick="saveNewMorphButton();">Save new morph</button><br>
+    <ul id="morphlistul" class="itemsul unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="commandlist" style="display: none;">
+  <span id="commandlist-title" slot="title">Command list</span>
+  <div slot="contents" id="commandlist-contents">
+	Click a command to use it:<br>
+	<input placeholder="Search" id="commandlistsearch"><br>
+    <ul id="commandlistul" class="itemsul unselectable">
+    </ul>
+	<!--<label class="unselectable"><input type="checkbox" id="commandlistgrid" onchange="commandListGrid()">Grid</label>-->
+  </div>
+</widget-window>
+
+<widget-window id="mail" style="display: none;">
+  <span slot="title">Mail</span>
+  <div slot="contents">
+    <button class="spaced_buttons" onclick="viewCompose();">Compose</button>
+    <button class="spaced_buttons" onclick="mailSelectToggle();">Toggle</button>
+    <button class="spaced_buttons" onclick="mailSelectDelete();">Delete</button>
+    <ul id="mailul" class="unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="compose" style="display: none;">
+  <span slot="title">Compose</span>
+  <div slot="contents">
+    <table border="0">
+      <tr><td><input class="spaced_buttons" type="submit" onclick="sendMail();" value="Send!" /></td><td><button class="spaced_buttons" onclick="previewMail();">Preview</button></td></tr>
+      <tr><td>To</td><td><input type="text" id="mailsendto" /></td></tr>
+      <tr><td>Subject</td><td><input type="text" id="mailsendsubject" /></td></tr>
+    </table>
+    <textarea id="mailsendtext" cols="30" rows="10"></textarea>
+  </div>
+</widget-window>
+
+<widget-window id="mail-view" style="display: none;">
+  <span slot="title" id="mail-view-title">Mail View</span>
+  <div slot="contents" id="mail-view-contents">
+  </div>
+</widget-window>
+
+<widget-window id="mail-preview" style="display: none;">
+  <span slot="title" id="mail-preview-title">Mail Preview</span>
+  <div slot="contents" id="mail-preview-contents">
+  </div>
+</widget-window>
+
+<widget-window id="moveItem" style="display: none;">
+  <span slot="title" id="moveItemTitle">Move Item</span>
+  <div slot="contents" id="inventory-contents">
+    Moving <span id="moveItemNoun">item</span>:
+    <ul id="movesourceul" class="itemsul unselectable">
+    </ul>
+
+    Please select a folder to move it into!
+    <ul id="movetargetul" class="itemsul unselectable">
+    </ul>
+  </div>
+</widget-window>
+
+<widget-window id="editItemWindow" style="display: none;">
+  <span slot="title">Edit Item</span>
+  <div slot="contents">
+    <div id="edittileimage">
+    Image URL: <input type="url" id="edittileurl" /><br>
+    <p>This should be an image uploaded to this server, or on<br><a href="https://filegarden.com/" target="_blank">File Garden</a>, <a href="https://imgbb.com/" target="_blank">ImgBB</a> or <a href="https://postimages.org/" target="_blank">Postimages</a>.<br>More image hosts can be added on request.</p>
+	<p>You can select this item in the tile editing window<br>to use it for tile graphics.</p>
+    </div>
+
+	<div id="edittiletileset">
+	<p><button onclick="document.getElementById('tileset').style.display='none';useItem(editItemID);editItemCancel();">Open item in tileset editor</button></p>
+	<p>Raw JSON:<br>
+	<textarea id="edittiletileset_json" placeholder="Tile list in JSON form"></textarea>
+	</p>
+	</div>
+
+	<div id="edittilegadget">
+		<strong>Gadget</strong><br>
+		Type:
+		<label class="unselectable"><input type="radio" id="gadgetTypeScript" name="gadgetType" onchange="changeGadgetType()" checked>Scripted</label>
+		<label class="unselectable"><input type="radio" id="gadgetTypePreset" name="gadgetType" onchange="changeGadgetType()">Built-in</label>
+		<label class="unselectable"><input type="radio" id="gadgetTypeRaw"    name="gadgetType" onchange="changeGadgetType()">Raw</label>
+		<br>
+		<div id="edittilegadget_script">
+			Run script: <select id="edittilegadget_script_run">
+			  <option value="auto_script">when gadget is loaded</option>
+			  <option value="map_script">when gadget is on a map</option>
+			  <option value="use_script">when gadget is "used"</option>
+			</select> <label class="unselectable"><input type="checkbox" id="edittilegadget_script_disable">Disable script</label><br>
+			<textarea id="edittilegadget_script_text" cols="60" rows="15" placeholder="tt.owner_say(&quot;Hello World!&quot;)"></textarea><br>
+			<label class="unselectable" for="edittilegadget_script_usable"><input type="checkbox" id="edittilegadget_script_usable">Gadget can be "used"</label><br>
+			Text item to get source from: <input type="text" id="edittilegadget_script_item" placeholder="Item entity ID">
+		</div>
+		<div id="edittilegadget_preset">
+			Behavior: <select id="edittilegadget_preset_choice" onchange="changeGadgetPreset()">
+			  <option value="nothing">Choose an option</option>
+			  <option value="accept_requests">Accept requests</option>
+			  <option value="bot_message_button">Bot message button</option>
+			  <option value="dir_cycle">Cycle through directions</option>
+			  <option value="pic_cycle">Cycle through frames</option>
+			  <option value="dice">Dice</option>
+			  <option value="doodle_board">Doodle board</option>
+			  <option value="draggable">Draggable</option>
+			  <option value="give_item">Give item</option>
+			  <option value="mini_tilemap">Mini tilemap</option>
+			  <option value="projectile_shooter">Projectile shooter</option>
+			  <option value="pushable">Pushable</option>
+			  <option value="random_tell">Random private message</option>
+			  <option value="rc_car">Remote control car</option>
+			  <option value="random_say">Say random message</option>
+			  <option value="user_particle">User particle</option>
+			</select> - <a href="https://wiki.novasquirrel.com/index.php?title=Gadget_types" target="_blank">Wiki article</a> for help.
+			<div id="edittilegadget_preset_rc_car">
+				<label class="unselectable" for="edittilegadget_preset_rc_car_owner_only"><input type="checkbox" id="edittilegadget_preset_rc_car_owner_only">Only the owner can use this</label><br>
+				<label class="unselectable" for="edittilegadget_preset_rc_car_fly"><input type="checkbox" id="edittilegadget_preset_rc_car_fly">Car can move through walls</label><br>
+				<label class="unselectable" for="edittilegadget_preset_rc_car_give_rides"><input type="checkbox" id="edittilegadget_preset_rc_car_give_rides">Car accepts carryme requests</label>
+			</div>
+			<div id="edittilegadget_preset_accept_requests">
+				<label class="unselectable" for="edittilegadget_preset_accept_requests_owner_only"><input type="checkbox" id="edittilegadget_preset_accept_requests_owner_only">Only accept requests from the owner</label><br>
+				Types to accept: <input id="edittilegadget_preset_accept_requests_types" placeholder="carry,carryme,followme,...">
+			</div>
+			<div id="edittilegadget_preset_random_message">
+				<textarea id="edittilegadget_preset_random_message_text" cols="60" rows="8" placeholder="One message per line"></textarea>
+			</div>
+			<div id="edittilegadget_preset_dice">
+				<table border="0">
+				<tr><td>Dice</td><td><input type="number" value="2" id="edittilegadget_preset_dice_dice" placeholder="2" size="3" /></td></tr>
+				<tr><td>Sides</td><td><input type="number" value="6" id="edittilegadget_preset_dice_sides" placeholder="6" size="3" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_bot_message_button">
+				<table border="0">
+				<tr><td>Send to</td><td><input value="" id="edittilegadget_preset_bot_message_button_id" placeholder="Entity ID" /></td></tr>
+				<tr><td>Text</td><td><input value="" id="edittilegadget_preset_bot_message_button_text" placeholder="Text to send" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_pushable">
+				<label class="unselectable" for="edittilegadget_preset_pushable_fly"><input type="checkbox" id="edittilegadget_preset_pushable_fly">Gadget can move through walls</label>
+			</div>
+			<div id="edittilegadget_preset_draggable">
+				<label class="unselectable" for="edittilegadget_preset_draggable_owner_only"><input type="checkbox" id="edittilegadget_preset_draggable_owner_only">Only the owner can drag this</label>
+			</div>
+			<div id="edittilegadget_preset_mini_tilemap">
+				<table border="0">
+				<tr><td>Tileset URL</td><td><input type="url" id="edittilegadget_preset_mini_tilemap_tileset_url" /></td></tr>
+				<tr><td>Tile size</td><td><input type="number" min="1" max="64" id="edittilegadget_preset_mini_tilemap_tile_width" /> &times; <input type="number" min="1" max="64" id="edittilegadget_preset_mini_tilemap_tile_height" /></td></tr>
+				<tr><td>Map size</td><td><input type="number" min="1" max="64" id="edittilegadget_preset_mini_tilemap_map_width" /> &times; <input type="number" min="1" max="64" id="edittilegadget_preset_mini_tilemap_map_height" /> (if type is "raw map")</td></tr>
+				<tr><td>Offset</td><td><input type="number" size="5" id="edittilegadget_preset_mini_tilemap_offset_x" /> , <input type="number" size="5" id="edittilegadget_preset_mini_tilemap_offset_y" /></td></tr>
+				<tr><td>Type</td><td><select id="edittilegadget_preset_mini_tilemap_type">
+				  <option value="text">ASCII Text</option>
+				  <option value="single">x,y in tileset</option>
+				  <option value="raw">Raw map</option>
+				</select></td></tr>
+				<tr><td>What to show</td></td><td><textarea id="edittilegadget_preset_mini_tilemap_data"></textarea></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_user_particle">
+				<label class="unselectable" for="edittilegadget_preset_user_particle_owner_only"><input type="checkbox" id="edittilegadget_preset_user_particle_owner_only">Only the owner can use this</label><br>
+				<label class="unselectable">Particle to use: <input id="edittilegadget_preset_user_particle_particle" size="40" placeholder="0 13 53 anim_frames=7 anim_loops=0 hide_me"></label>
+			</div>
+			<div id="edittilegadget_preset_doodle_board">
+				<table border="0">
+				<tr><td>Tileset URL</td><td><input type="url" id="edittilegadget_preset_doodle_board_tileset_url" /> <label><input type="checkbox" id="edittilegadget_preset_doodle_board_2x1" onchange="updateDoodleBoardPixelSize();" />More colors!</label></td></tr>
+				<tr><td>Map size</td><td><input type="number" min="1" max="16" id="edittilegadget_preset_doodle_board_map_width" placeholder="8" onchange="updateDoodleBoardPixelSize();" oninput="updateDoodleBoardPixelSize();" /> &times; <input type="number" min="1" max="32" id="edittilegadget_preset_doodle_board_map_height" placeholder="16" onchange="updateDoodleBoardPixelSize();"  oninput="updateDoodleBoardPixelSize();" /> | <span id="edittilegadget_preset_doodle_board_pixel_size"></span></td></tr>
+				<tr><td>Image data</td><td><textarea id="edittilegadget_preset_doodle_board_data"></textarea></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_doodle_board_ignore_clicks">Ignore clicks</label></td><td><input type="checkbox" id="edittilegadget_preset_doodle_board_ignore_clicks" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_pic_cycle">
+				<table border="0">
+				<tr><td>First frame's pic</td><td><input type="text" placeholder="sheet x y" id="edittilegadget_preset_pic_cycle_first_pic" /> <button onclick="copyTraitPicFromGadget();">Copy from entity</button></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_length">Number of frames</label></td><td><input type="number" value="1" min="1" id="edittilegadget_preset_pic_cycle_length" placeholder="1" size="3" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_index">Current index</label></td><td><input type="number" value="0" min="0" id="edittilegadget_preset_pic_cycle_index" placeholder="0" size="3" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_owner_only">Owner only</label></td><td><input type="checkbox" id="edittilegadget_preset_pic_cycle_owner_only" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_random">Random frames</label></td><td><input type="checkbox" id="edittilegadget_preset_pic_cycle_random" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_destroy_on_end">Destroy on end</label></td><td><input type="checkbox" id="edittilegadget_preset_pic_cycle_destroy_on_end" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_destroy_particle">Particle when destroyed</label></td><td><input type="text" id="edittilegadget_preset_pic_cycle_destroy_particle" placeholder="0 0 0" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_pic_cycle_use_particle">Particle when clicked</label></td><td><input type="text" id="edittilegadget_preset_pic_cycle_use_particle" placeholder="0 0 0" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_dir_cycle">
+				<table border="0">
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_pattern">Direction pattern</label></td><td><input type="text" id="edittilegadget_preset_dir_cycle_pattern" placeholder="0,1,2,3,4,5,6,7" size="20" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_index">Current index</label></td><td><input type="number" value="0" min="0" id="edittilegadget_preset_dir_cycle_index" placeholder="0" size="3" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_owner_only">Owner only</label></td><td><input type="checkbox" id="edittilegadget_preset_dir_cycle_owner_only" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_random">Random frames</label></td><td><input type="checkbox" id="edittilegadget_preset_dir_cycle_random" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_destroy_on_end">Destroy on end</label></td><td><input type="checkbox" id="edittilegadget_preset_dir_cycle_destroy_on_end" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_destroy_particle">Particle when destroyed</label></td><td><input type="text" id="edittilegadget_preset_dir_cycle_destroy_particle" placeholder="0 0 0" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_dir_cycle_use_particle">Particle when clicked</label></td><td><input type="text" id="edittilegadget_preset_dir_cycle_use_particle" placeholder="0 0 0" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_projectile_shooter">
+				<table border="0">
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_pic">Projectile pic</label></td><td><input type="text" id="edittilegadget_preset_projectile_shooter_pic" placeholder="0 0 0" /> <button onclick="copyTraitPicFromGadget();">Copy from entity</button></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_max_distance">Max distance</label></td><td><input type="number" id="edittilegadget_preset_projectile_shooter_max_distance" placeholder="50" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_dir">Projectile direction</label></td><td><select id="edittilegadget_preset_projectile_shooter_dir">
+				  <option value="none">Same as user</option>
+				  <option value="0">East</option><option value="1">South east</option><option value="2">South</option><option value="3">South west</option><option value="4">West</option><option value="5">North west</option><option value="6">North</option><option value="7">North east</option>
+				</select></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_break_particle">Projectile break particle</label></td><td><input type="text" id="edittilegadget_preset_projectile_shooter_break_particle" placeholder="0 0 0" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_break_wall_hit">Break on wall hit</label></td><td><input type="checkbox" id="edittilegadget_preset_projectile_shooter_break_wall_hit" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_break_user_hit">Break on user hit</label></td><td><input type="checkbox" id="edittilegadget_preset_projectile_shooter_break_user_hit" /></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_projectile_shooter_break_max_distance">Break on max distance</label></td><td><input type="checkbox" id="edittilegadget_preset_projectile_shooter_break_max_distance" /></td></tr>
+				</table>
+			</div>
+			<div id="edittilegadget_preset_give_item">
+				<table border="0">
+				<tr><td><label class="unselectable" for="edittilegadget_preset_give_item_item">Item to give a copy of</label></td><td><input type="text" id="edittilegadget_preset_give_item_item" placeholder="id1,id2,id3..."></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_give_item_temp">Item copied is temporary</label></td><td><input type="checkbox" id="edittilegadget_preset_give_item_temp"></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_give_item_auto_carry">Automatically carry copied item</label></td><td><input type="checkbox" id="edittilegadget_preset_give_item_auto_carry"></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_give_item_menu">Show a menu with all items</label></td><td><input type="checkbox" id="edittilegadget_preset_give_item_menu"></td></tr>
+				<tr><td><label class="unselectable" for="edittilegadget_preset_give_item_owner_only">Only the owner can get items</label></td><td><input type="checkbox" id="edittilegadget_preset_give_item_owner_only"></td></tr>
+				</table>
+				Put the item you want to copy into this gadget's inventory.
+			</div>
+		</div>
+		<div id="edittilegadget_raw">
+			<textarea id="edittilegadget_raw_textarea" cols="60" rows="8" placeholder="Raw JSON for the gadget"></textarea>
+		</div>
+		<br>
+		<input type="button" value="Apply changes" onclick="editItemApply();">
+		<input type="button" value="Cancel" onclick="editItemCancel();">
+		<hr>
+	</div>
+
+	<div id="edittilecommandlist">
+	<strong>Command list</strong><br>
+	<textarea id="edittilecommandlist_text" cols="60" rows="15"></textarea>
+	</div>
+
+    <div id="edittiletext">
+    <textarea id="edittiletextarea" cols="60" rows="15"></textarea>
+    </div>
+
+    <div id="edittileobject">
+    <strong>Item picture</strong><br>
+	<span id="itemImageTypePicker">Type:
+	<label class="unselectable"><input type="radio" id="itemImageIsSheet" name="itemImageType" onchange="changeItemImageType()" checked>Normal</label>
+	<label class="unselectable"><input type="radio" id="itemImageIsURL" name="itemImageType" onchange="changeItemImageType()">URL</label>
+	<label class="unselectable"><input type="radio" id="itemImageIsExtended" name="itemImageType" onchange="changeItemImageType()">Extended</label>
+	</span>
+
+	<p>
+	<div id="tileImageSheetOptions">
+    Tile sheet: <select id="edittilesheet" onchange="editItemUpdatePic();">
+      <option value="0">Global</option>
+      <option value="-1">Critters</option>
+      <option value="-2">Pulp</option>
+      <option value="-3">EasyRPG</option>
+      <option value="custom">Custom</option>
+    </select> <span id="tileImageSheetOptionsShowID"></span><br>
+
+	<img src="img/transparent.png" width="16" height="16" id="edittilepic" style="background: url(img/potluck.png) 0px 0px;">
+    <input type="number" value="0" id="edittilex" oninput="editItemUpdatePic();" size="4" />
+    <input type="number" value="0" id="edittiley" oninput="editItemUpdatePic();" size="4" />
+	<button onclick="itemEditZoom();">Zoom</button> <input type="button" value="Apply changes" onclick="editItemApply();"><br>
+    <p>
+    <div style="overflow:scroll; width:528px; height:256px;" id="edittilesheetcontainer">
+    <img src="" id="edittilesheetselect">
+    </div>
+    </p>
+	</div>
+	<div id="tileImageURLOptions">URL: <input id="edittileimageurl" type="url" placeholder="Image URL"></div>
+	<div id="tileImageExtendedOptions"><table border="0"><tr><td>Basic URL:</td><td><input id="edittileextbasic" type="url" placeholder="Image URL"></td></tr></tr><tr><td>Properties:</td><td><textarea cols="20" rows="5" id="edittileextjson"></textarea><button onclick="editItemExtEdit()">Edit</button></td></tr></table></div>
+	</p>
+
+	<p><details id="edittileautotileoptions">
+	<summary class="unselectable">Autotiling</summary>
+	<table border="0">
+	<tr><td>Type</td><td><select id="edittileautotile">
+		<option value="0">None</option>
+		<option value="1">9 slice</option>
+		<option value="2">4 directions - Middle</option>
+		<option value="3">4 directions - Single</option>
+		<option value="4">RPG - Middle</option>
+		<option value="5">RPG - Single</option>
+		<option value="6">Horizontal - Middle 3</option>
+		<option value="7">Horizontal - Middle 4</option>
+		<option value="8">Horizontal - Single 4</option>
+		<option value="9">Vertical - Middle 3</option>
+		<option value="10">Vertical - Middle 4</option>
+		<option value="11">Vertical - Single 4</option>
+		<option value="12">Quarter 8-way - Middle (8)</option>
+		<option value="13">Quarter 8-way - Single (8)</option>
+		<option value="14">Quarter 8-way - Middle (16)</option>
+		<option value="15">Quarter 8-way - Single (16)</option>
+	</select></td></tr>
+	<tr><td>Class</td><td><input type="text" id="edittileautotileclass" placeholder="Autotile class" /></td></tr>
+	<tr><td>Class (edge)</td><td><input type="text" id="edittileautotileclassedge" placeholder="Autotile class (edge)" /></td></tr>
+	</table>
+	This tile will connect to others if the classes match,<br>or (if a class isn't provided) the names match.<br>A tile will connect to another tile's "edge" class in one direction.
+	</details></p>
+
+	<p><details id="edittileanimationoptions">
+	<summary class="unselectable">Animation</summary>
+	<table border="0">
+	<tr><td>Frames</td><td><input type="number" value="0" size="4" id="edittileanimationframes" /></td></tr>
+	<tr><td>Frame duration</td><td><input type="number" value="0"  size="4" id="edittileanimationspeed" /> (units of 0.1 seconds)</td></tr>
+	<tr><td>Start offset</td><td><input type="number" value="0" size="4" id="edittileanimationoffset" /> (units of 0.1 seconds)</td></tr>
+	<tr><td>Direction</td><td>
+    <select id="edittileanimationmode">
+        <option value="0">Forwards</option>
+        <option value="1">Backwards</option>
+        <option value="2">Ping-pong</option>
+        <option value="3">Ping-pong reverse</option>
+        <option value="4">Random frames</option>
+    </select></td></tr>
+	</table>
+	</details></p>
+
+	<strong>Item properties</strong>
+    <table border="0">
+    <tr>
+    <td><label for="edittilename" class="unselectable">Name</label></td>
+    <td><input type="text" id="edittilename"/></td>
+    </tr>
+    <tr>
+    <td><label for="edittiledesc" class="unselectable" id="description_or_message">Description</label></td>
+    <td><textarea id="edittiledesc"></textarea></td>
+    </tr>
+    </table>
+
+    <div id="edittilemaptile">
+    <p>
+    Item type<br>
+    <select id="edittiletype">
+      <option value="">Normal</option>
+      <option value="sign">Sign</option>
+<!--      <option value="door">Door</option>
+      <option value="ice">Ice</option>
+      <option value="escalator">Escalator</option>
+      <option value="water">Water</option> -->
+    </select>
+    </p>
+
+    <p>
+    <label class="unselectable"><input type="checkbox" id="edittiledensity">Item is a wall</label><br>
+    <label class="unselectable"><input type="checkbox" id="edittileisobject">Item is a floor tile</label><br>
+    <label class="unselectable"><input type="checkbox" id="edittileover">Display item above players</label>
+    </p>
+    </div>
+    </div>
+
+	<div id="itemproperties_notmaptile">
+	<strong>Item properties</strong>
+    <table border="0">
+    <tr>
+    <td><label for="edittilename_notmaptile" class="unselectable">Name</label></td>
+    <td><input type="text" id="edittilename_notmaptile"/></td>
+    </tr>
+    <tr>
+    <td><label for="edittiledesc_notmaptile" class="unselectable">Description</label></td>
+    <td><textarea id="edittiledesc_notmaptile"></textarea></td>
+    </tr>
+    </table>
+	</div>
+
+    <br>
+    <input type="button" value="Apply changes" onclick="editItemApply();">
+    <input type="button" value="Cancel" onclick="editItemCancel();">
+  </div>
+</widget-window>
+
+<widget-window id="viewUserProfileWindow" style="display: none;">
+	<span slot="title">User profile</span>
+	<div slot="contents">
+		<strong id="userProfileName"></strong> (<span id="userProfileUsername"></span>) <span id="userProfilePronounsDot">&#8226;</span> <span id="userProfilePronouns"></span><br>
+		<span id="userProfileBirthdaySpan">&#x1F382; <span id="userProfileBirthday"></span><br></span>
+		Last updated <span id="userProfileUpdatedAt"></span>
+		<button id="userProfileEditButton" onclick="userProfileEdit()">Edit</button>
+		<hr>
+		<button onclick="profileTabAbout()">About</button><button id="profileTabPictureButton" onclick="profileTabPicture()">Picture</button><button id="profileTabInterestsButton" onclick="profileTabInterests()">Interests</button><button id="profileTabContactButton" onclick="profileTabContact()">Contact</button><button id="profileTabHomeButton"onclick="profileTabHome()">Home</button>
+		<div id="userProfileAbout">
+			<p>&#x1F407; <strong id="userProfileCharacterName"></strong> <span id="userProfileCharacterPronounsDot">&#8226;</span> <span id="userProfileCharacterPronouns"></span><br><span id="userProfileCharacterDescription" class="column-of-text-in-window"></span><p>
+			<hr>
+			<p>
+				<table border="1" id="userProfileExtraFields">
+				</table>
+			</p>
+			<p id="userProfileAboutText" class="column-of-text-in-window"></p>
+		</div>
+		<div id="userProfilePicture" style="display: none;">
+			<p>
+				<img id="userProfilePicturePicture" style="max-width: 512px; max-height: 512px;">
+			</p>
+		</div>
+		<div id="userProfileInterests" style="display: none;">
+			<p id="userProfileInterestsInterestsParagraph">
+				<strong>Interests</strong><br><span id="userProfileInterestsInterests" class="column-of-text-in-window"></span>
+			</p>
+			<p id="userProfileInterestsLookingForParagraph">
+				<strong>Looking for</strong><br><span id="userProfileInterestsLookingFor" class="column-of-text-in-window"></span>
+			</p>
+		</div>
+		<div id="userProfileContact" style="display: none;">
+			<p id="userProfileContactEmailParagraph">
+				<strong>Email</strong><br><span id="userProfileContactEmail" class="column-of-text-in-window"></span>
+			</p>
+			<p id="userProfileContactWebsiteParagraph">
+				<strong>Website</strong><br><span id="userProfileContactWebsite" class="column-of-text-in-window"></span>
+			</p>
+			<p>
+				<table border="1" id="userProfileContactTable">
+				</table>
+			</p>
+		</div>
+		<div id="userProfileHome" style="display: none;">
+			<p>
+				<strong>Home</strong><br><span id="userProfileHomeName"></span>
+			</p>
+			<p>
+				<button onclick="userProfileGoToHome()" id="userProfileHomeButton">Visit</button>
+			</p>
+		</div>
+	</div>
+</widget-window>
+
+<widget-window id="viewMiniUserProfileWindow" style="display: none;">
+	<span slot="title">User profile</span>
+	<div slot="contents">
+		<p>This user doesn't have a user profile yet</p>
+		<p>&#x1F407; <strong id="userMiniProfileCharacterName"></strong><br><span id="userMiniProfileCharacterDescription" class="column-of-text-in-window"></span><p>
+	</div>
+</widget-window>
+
+<widget-window id="editUserProfileWindow" style="display: none;">
+	<span slot="title">Edit user profile</span>
+	<div slot="contents">
+		<button onclick="editUserProfileUpdate()">Update</button>
+		<button onclick="editUserProfileDeleteProfile()">Delete profile</button>
+		<hr>
+		<p>
+			<table border="1">
+			<tr><th>Character name</th><td><input id="editUserProfileCharacterName"></td></tr>
+			<tr><th>Character pronouns</th><td><input id="editUserProfileCharacterPronouns"></td></tr>
+			<tr><th>Character description</th><td><textarea id="editUserProfileCharacterDesc"></textarea></td></tr>
+			</table>
+		</p>
+		<hr>
+		<p>
+			<table border="1">
+				<tr><th>Name</th><td><input id="editUserProfileName"></td></tr>
+				<tr><th>Pronouns</th><td><input id="editUserProfilePronouns"></td></tr>
+				<tr><th>Picture URL</th><td><input type="url" id="editUserProfilePictureUrl"></td></tr>
+				<tr><th>Birthday<br>(YYYY-MM-DD format)</th><td><input id="editUserProfileBirthday"></td></tr>
+				<tr><th>Email</th><td><input id="editUserProfileEmail"></td></tr>
+				<tr><th>Website</th><td><input id="editUserProfileWebsite"></td></tr>
+				<tr><th>Interests<br>(comma separated)</th><td><input id="editUserProfileInterests"></td></tr>
+				<tr><th>Looking for</th><td><textarea id="editUserProfileLookingFor"></textarea></td></tr>
+				<tr><th>Hide birthday<br>(only show age)</th><td><input type="checkbox" id="editUserProfileHideBirthday"></td></tr>
+				<tr><th>Hide email<br>(only visible to admin)</th><td><input type="checkbox" id="editUserProfileHideEmail"></td></tr>
+			</table>
+		</p>
+		<hr>
+		<p><strong>About me</strong><br><textarea style="width: 100%;" rows="5" id="editUserProfileAbout"></textarea></p>
+		<hr>
+		<p><strong>Home</strong> <button onclick="editUserProfileSetHomeHere()">Set home to here</button><br>
+			<table border="1">
+				<tr><th>Home map</th><td><input id="editUserProfileHomeMap"></td></tr>
+				<tr><th>Home X</th><td><input id="editUserProfileHomeX"></td></tr>
+				<tr><th>Home Y</th><td><input id="editUserProfileHomeY"></td></tr>
+			</table>
+		<hr>
+		<p>
+			<strong>Extra "about" fields</strong>
+			<table border="1">
+				<tr><th><input id="editUserProfileExtraAboutKey0"></th><td><input id="editUserProfileExtraAboutValue0"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey1"></th><td><input id="editUserProfileExtraAboutValue1"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey2"></th><td><input id="editUserProfileExtraAboutValue2"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey3"></th><td><input id="editUserProfileExtraAboutValue3"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey4"></th><td><input id="editUserProfileExtraAboutValue4"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey5"></th><td><input id="editUserProfileExtraAboutValue5"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey6"></th><td><input id="editUserProfileExtraAboutValue6"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey7"></th><td><input id="editUserProfileExtraAboutValue7"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey8"></th><td><input id="editUserProfileExtraAboutValue8"></td></tr>
+				<tr><th><input id="editUserProfileExtraAboutKey9"></th><td><input id="editUserProfileExtraAboutValue9"></td></tr>
+			</table>
+		</p>
+		<hr>
+		<p>
+			<strong>Extra "contact" fields</strong>
+			<table border="1">
+				<tr><th><input id="editUserProfileExtraContactKey0"></th><td><input id="editUserProfileExtraContactValue0"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey1"></th><td><input id="editUserProfileExtraContactValue1"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey2"></th><td><input id="editUserProfileExtraContactValue2"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey3"></th><td><input id="editUserProfileExtraContactValue3"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey4"></th><td><input id="editUserProfileExtraContactValue4"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey5"></th><td><input id="editUserProfileExtraContactValue5"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey6"></th><td><input id="editUserProfileExtraContactValue6"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey7"></th><td><input id="editUserProfileExtraContactValue7"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey8"></th><td><input id="editUserProfileExtraContactValue8"></td></tr>
+				<tr><th><input id="editUserProfileExtraContactKey9"></th><td><input id="editUserProfileExtraContactValue9"></td></tr>
+			</table>
+		</p>
+		<hr>
+		<button onclick="editUserProfileUpdate()">Update</button>
+		<button onclick="editUserProfileDeleteProfile()">Delete profile</button>
+	</div>
+</widget-window>
+
+<widget-window id="doodleBoardPaintWindow" style="display: none;">
+	<span slot="title">Paint!</span>
+	<div slot="contents">
+		<table><tr>
+		<td>
+			<strong>Colors</strong> <canvas id="doodleBoardPaintCurrentColor" width="1" height="1"></canvas><br><canvas id="doodleBoardPaintColors" width="4" height="4"></canvas><span id="paint4x2Modes"><br><label class="unselectable"><input type="radio" id="paint4x2ModeToggle" name="paint4x2Mode">Toggle</label><label class="unselectable"><br><input type="radio" id="paint4x2Mode1st" name="paint4x2Mode" checked>1st</label><label class="unselectable"><input type="radio" id="paint4x2Mode2nd" name="paint4x2Mode">2nd</label></span>
+			<span id="paintPaletteOptions"><br><select id="paintPaletteSelect" onchange="paintChangedPalette(true);"></select><br><input type="url" size="14" id="paintCustomPaletteUrl"></span>
+		</td>
+		<td><div id="doobleBoardPaintCanvasContainer"><canvas id="doodleBoardPaintCanvas" width="32" height="32"></canvas><canvas id="doodleBoardPaintGridCanvas"></canvas></div></td>
+		<td>
+			<table border="1">
+			<tr><th>Tools</th><td><table><tr><td><button id="paintTool1px" onclick="paintTool(1);">1 px</button></td><td><button id="paintTool2px" onclick="paintTool(2);">2 px</button></td><td><button id="paintTool3px" onclick="paintTool(3);">3 px</button></td><tr><tr><td><button id="paintToolPlus" onclick="paintTool('+');">&nbsp;+&nbsp;</button></td><td id="paintToolFillTd"><button id="paintToolFill" onclick="paintTool('fill')">Fill</button></td><td id="paintToolPickTd"><button id="paintToolPick" onclick="paintTool('pick');">Pick</button></td><td id="paintToolRecolorTd"><button id="paintToolRecolor" onclick="paintTool('recolor');">Recolor</button></td><td id="paintToolInvertTd"><button id="paintToolInvert" onclick="paintTool('invert');">Invert</button></td></tr></table></td></tr>
+			<tr><th>Canvas</th><td><table><tr><td><button onclick="paintFillAll();">Fill all</button></td><td><button onclick="paintSavePNG();">Save PNG</button></td></tr><tr id="paint4x2CanvasButtons"><td><button onclick="paintInvertAll();">Invert all</button></td><td><button onclick="paintRecolorAll();">Recolor all</button></td></tr><tr><td><button onclick="paintUndo();">Undo</button></td><td><button onclick="paintMoreCommands()">Shift</button></td><td></td></tr></table></tr>
+			<tr><th>1&times;</th><td><canvas id="doodleBoardPaintPreview" width="32" height="32"></canvas></td></tr>
+			<tr><td colspan="2"><label class="unselectable">Zoom <input id="paintZoom" oninput="paintChangeZoom();" value="8" type="number" min="1" max="12"></label> Grid:<input id="paintGridX" size="2" value="0" oninput="paintChangeGrid();">&times;<input id="paintGridY" size="2" value="0" oninput="paintChangeGrid();"></td><tr>
+			</table>
+		</td>
+		</tr></table>
+	</div>
+</widget-window>
+
+<widget-window id="mapScreenshotWindow" style="display: none;">
+	<span slot="title">Map screenshot</span>
+	<div slot="contents">
+		<canvas id="mapScreenshotCanvas" style="max-width: 200px; overflow: auto;"></canvas>
+	</div>
+</widget-window>
+
+<!-- context menus -->
+<widget-contextmenu id="item-contextmenu" style="display: none;">
+  <ul slot="menu" id="item-contextmenu-menu">
+    <li id="viewUserProfileLi" onclick="requestViewUserProfile(contextMenuItem)">View user profile</li>
+    <li onclick="editItem(contextMenuItem)">Edit</li>
+    <li id="droptakeitem" onclick="dropTakeItem(contextMenuItem)">Drop</li>
+    <li onclick="moveItem(contextMenuItem)">Move to...</li>
+    <li onclick="cloneItem(contextMenuItem)">Clone</li>
+    <li onclick="cloneItem(contextMenuItem, true)">Clone (Temporary)</li>
+    <li id="copyItemToTilesetLi" onclick="copyItemToTileset(contextMenuItem)">Copy to tileset/</li>
+    <li id="copyItemToHotbarLi" onclick="copyItemToHotbar(contextMenuItem)">Copy to hotbar</li>
+    <li id="itemPaintLi" onclick="startPainting(contextMenuItem)">Paint &#x1F3A8;</li>
+    <li id="itemVerbsLi" onclick="viewItemVerbs(event)">Send command</li>
+    <li onclick="sendPrivateMessageToItem(contextMenuItem)">Private message</li>
+    <li onclick="deleteItem(contextMenuItem)">Delete</li>
+    <!-- <li onclick="referenceItem(contextMenuItem)">Create Reference</li> -->
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="verbs-contextmenu" style="display: none;">
+  <ul id="itemverbs_ul" slot="menu" id="verbs-contextmenu-menu">
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="tileset-contextmenu" style="display: none;">
+  <ul slot="menu" id="tileset-contextmenu-menu">
+    <li onclick="editTilesetItem()">Edit</li>
+    <li onclick="cloneTilesetItem()">Clone</li>
+    <li onclick="copyTilesetItemToHotbar()">Copy to hotbar</li>
+    <li id="changeTilesetItemIDLi" onclick="changeTilesetItemID()">Change ID</li>
+    <li onclick="deleteTilesetItem()">Delete</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="mapobj-contextmenu" style="display: none;">
+  <ul slot="menu" id="mapobj-contextmenu-menu">
+    <li onclick="editMapObj()">Edit</li>
+    <li id="mapobj_movetop" onclick="moveTopMapObj()">Move to top</li>
+    <li id="mapobj_moveup" onclick="moveUpMapObj()">Move up</li>
+    <li id="mapobj_movedown" onclick="moveDownMapObj()">Move down</li>
+    <li id="mapobj_movebottom" onclick="moveBottomMapObj()">Move to bottom</li>
+    <li id="copyMapObjToTilesetLi" onclick="copyMapObjToTileset()">Copy to tileset/</li>
+    <li onclick="copyMapObjToHotbar()">Copy to hotbar</li>
+    <li onclick="deleteMapObj()">Delete</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="turf-contextmenu" style="display: none;">
+  <ul slot="menu" id="turf-contextmenu-menu">
+    <li onclick="editTurf()">Edit</li>
+    <li id="copyTurfToTilesetLi" onclick="copyTurfToTileset()">Copy to tileset</li>
+    <li onclick="copyTurfToHotbar()">Copy to hotbar</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="build-contextmenu" style="display: none;">
+  <ul slot="menu" id="build-contextmenu-menu">
+    <li id="copyBuildToTilesetLi" onclick="copyBuildToTileset()">Copy to tileset</li>
+    <li onclick="copyBuildToHotbar();">Copy to hotbar</li>
+    <li onclick="copyBuildToInventory();">Copy to inventory</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="hotbar-contextmenu" style="display: none; z-index: 10;">
+  <ul slot="menu" id="hotbar-contextmenu-menu">
+    <li id="copyHotbarSlotToTilesetLi" onclick="copyHotbarSlotToTileset();">Copy to tileset</li>
+    <li id="copyHotbarSlotToInventoryLi" onclick="copyHotbarSlotToInventory();">Copy to inventory</li>
+    <li onclick="copyHereHotbarSlot();">Copy here</li>
+    <li id="editHotbarSlotLi" onclick="editHotbarSlot();">Edit</li>
+    <li onclick="deleteHotbarSlot();">Delete</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="hotbar-no-item-contextmenu" style="display: none; z-index: 10;">
+  <ul slot="menu" id="hotbar-no-item-contextmenu-menu">
+    <li onclick="copyHereHotbarSlot();">Copy here</li>
+    <li onclick="newTileHotbarSlot();">New tile</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="fileupload-contextmenu-image" style="display: none;">
+  <ul slot="menu" id="fileupload-contextmenu-menu">
+	<li onclick="fileUploadContextMenuEdit();">Edit image</li>
+	<li onclick="moveFileOrFolder(contextMenuFile, false);">Move image</li>
+	<li><a id="openFileInNewTabLink" href="https://example.com" target="_blank">Open image in new tab</a></li>
+	<li onclick="fileUploadContextMenuTileSheet();">Create a tile sheet item</li>
+	<li onclick="fileUploadContextMenuAppearance();">Set appearance to this</li>
+	<li onclick="fileUploadContextMenuDelete();">Delete image</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="fileupload-contextmenu-music" style="display: none;">
+  <ul slot="menu" id="fileupload-contextmenu-menu">
+	<li onclick="fileUploadPlayMusic();">Play music</li>
+	<li onclick="fileUploadContextMenuEdit();">Edit music</li>
+	<li onclick="moveFileOrFolder(contextMenuFile, false);">Move music</li>
+	<li><a id="openMusicInNewTabLink" href="https://example.com" target="_blank">Open music in new tab</a></li>
+	<li onclick="fileUploadSetMapMusic();">Set map music to this</li>
+	<li onclick="fileUploadContextMenuDelete();">Delete music</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="filefolder-contextmenu" style="display: none;">
+  <ul slot="menu" id="filefolder-contextmenu-menu">
+	<li onclick="fileFolderContextMenuEdit();">Edit folder</li>
+	<li onclick="moveFileOrFolder(contextMenuFolder, true);">Move folder</li>
+	<li onclick="fileFolderContextMenuDelete();">Delete folder</li>
+  </ul>
+</widget-contextmenu>
+
+<widget-contextmenu id="morphlist-contextmenu" style="display: none;">
+  <ul slot="menu" id="morphlist-contextmenu-menu">
+	<li onclick="contextMenuMorphSwitch();">Switch to this</li>
+	<li onclick="contextMenuMorphSwitchQuiet();">Switch (quietly)</li>
+	<li onclick="contextMenuMorphSave();">Save here</li>
+	<li onclick="contextMenuMorphDelete();">Delete morph</li>
+  </ul>
+</widget-contextmenu>
+
+<!-- Game interface with the map and chat -->
+
+<!-- Map and hotbar -->
+<div id="map-container">
+  <canvas class="unselectable" id="map"></canvas>
+
+  <div id="selector-container">
+    <canvas class="unselectable" id="selector" width="320" height="16" imageSmoothingEnabled="false"></canvas>
+  </div>
+</div>
+
+<!-- Chat -->
+<div id="chat-container">
+  <div id="chatArea" class="chatarea">
+  </div>
+  <div>
+    <input type="text" style="width:100%;" id="chatInput" autocomplete="off" placeholder="chat here... (click or press enter to start!)" enterkeyhint="send">
+  </div>
+  <div class="unselectable"><select id="chatprefix">
+      <option value=""></option>
+      <option value="/ooc ">/ooc</option>
+      <option value="/me ">/me</option>
+      <option value="/spoof ">/spoof</option>
+    </select> <button id="filterChatButtonAll" style="font-weight:bold;" onclick="filterChat(null);">All</button> <button id="filterChatButtonMap" onclick="filterChat('map');">Map</button> <button id="filterChatButtonPrivate" onclick="filterChat('private');">Private</button> <button id="sendButton" style="display:none;" onclick="sendMessage();">Send &#10148;</button></div>
+</div>
+
+<!-- Mobile buttons --->
+<div id="touch-button-container" class="unselectable">
+  <table border="0">
+    <tr>
+      <td id="touch_button_ul">&nwarr;</td>
+      <td id="touch_button_u">&uarr;</td>
+      <td id="touch_button_ur">&nearr;</td>
+    </tr>
+    <tr>
+      <td id="touch_button_l">&larr;</td>
+      <td id="touch_button_walkturn">&#x1F6B6;</td>
+      <td id="touch_button_r">&rarr;</td>
+    </tr>
+    <tr>
+      <td id="touch_button_dl">&swarr;</td>
+      <td id="touch_button_d">&darr;</td>
+      <td id="touch_button_dr">&searr;</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Main wrapper div -->
+</div>
+</body>
+</html>

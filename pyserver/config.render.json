@@ -1,0 +1,39 @@
+{
+  "Server": {
+    "Name": "商域之创世纪 · 试玩版",
+    "Admins": ["syjtadmin"],
+    "MaxUsers": 15,
+    "MaxDBMaps": 100,
+    "MOTD": "欢迎来到商域之创世纪试玩版｜免费实例休眠时首次连接请等待 30–60 秒",
+    "Port": 12550,
+    "WSURL": "wss://shangyu-genesis-ws.onrender.com/ws/",
+    "WebClientURL": "https://Lucent-rock.github.io/shangyu-genesis/world.html",
+    "WebClientTouchURL": "https://Lucent-rock.github.io/shangyu-genesis/touch_ui.html",
+    "ResourceFiles": [
+      "server_resources.json",
+      "server_resources2.json",
+      "server_resources3.json",
+      "server_resources_syjt.json"
+    ],
+    "ResourceIMGBase": "https://Lucent-rock.github.io/shangyu-genesis/img/",
+    "BroadcastConnects": false,
+    "BroadcastDisconnects": false
+  },
+  "Database": {
+    "File": "syjt_prod.db",
+    "Setup": true
+  },
+  "Images": {
+    "URLWhitelist": []
+  },
+  "API": {
+    "Enabled": false,
+    "Port": 12551,
+    "URL": "",
+    "AdminPassword": ""
+  },
+  "Security": {
+    "AllowedOrigins": ["https://Lucent-rock.github.io"],
+    "AllowedOrigins2": ["https://Lucent-rock.github.io"]
+  }
+}

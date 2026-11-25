@@ -1,0 +1,24 @@
+html, body {
+  font-size: 16px;
+  touch-action: none;
+  margin: 0;
+  height: 100%;
+  overflow: hidden
+}
+
+#chat-container {
+    position: absolute;
+    left: 8px;
+    bottom: 32px;
+    width: 50%;
+}
+
+#chat-container.pinned {
+	z-index: 1;
+}
+
+@media (orientation: landscape) {
+	#chat-container {
+		width: 30%;
+	}
+}

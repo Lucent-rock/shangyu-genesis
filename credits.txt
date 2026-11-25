@@ -1,0 +1,93 @@
+Tileset credits by file:
+	easyrpg.png and easyrpg_v2.png
+		From the EasyRPG RTP; see https://github.com/EasyRPG/RTP
+
+		Most art by JasonPerry - https://finalbossblues.itch.io/
+		Door by Tom Lemmens - https://github.com/lemtom
+		Chest by Blarumyrran
+		See https://github.com/EasyRPG/RTP/blob/master/AUTHORS.md
+
+		easyrpg_v2.png has edits for additional colors/variations by JustThePulp
+
+	potluck.png
+		From the Tileset Potluck project; see https://web.archive.org/web/20170601191151/https://c.eev.ee/tileset-potluck/
+		List of people who contributed art to this (credited by Twitter usernames): https://gist.github.com/eevee/59012b2a3d4dcdb40b5247ecdc2cfb34
+
+		A copy of the above: @__mote @aBinaryTernary @ach_crvens @amymist @BarryBenson2007 @bulbasort @BushytailSkwirl @doniamae @eevee @eltoraz @femslashfatale @fluffy @Fullalizards @h0m54r @Hex_Princess @hillexed @homomculus @illusionfoxe @interleaper @InvisibleUp @jackalune @Kirbizard @LeviticusLong @LydianChord @mccolgst @nerionaya @NMcCoy @NoHatCoder @novadasterin @OokiePigster @OverflowMachine @pokemonhug @PolyCement @RavenWorks @revoblam @ShikkaTL @thefenceturtle @ThomasWinwood @tom7 @towerofnix @ubuntor @VoxSomniator
+
+	extra.png
+		Uses art from these free tilesets:
+
+		https://opengameart.org/content/tiny-16-basic
+			Art by Lanea Zimmerman
+
+		https://opengameart.org/content/town-tiles
+			Art by surt
+
+		https://opengameart.org/content/16x16-town-remix
+			Art by Lanea "Sharm" Zimmerman, Stephen "Redshrike" Challener, Carl "Surt" Olsson, and Jetrel, for OpenGameArt.org (http://opengameart.org)
+
+		https://opengameart.org/content/16x16-indoor-rpg-tileset-the-baseline
+			Art by Stephen Challener (Redshrike). Commissioned by OpenGameArt.org (http://opengameart.org)
+
+		https://opengameart.org/content/16x16-overworld-tiles
+			Art by Sharm
+
+		https://opengameart.org/content/tiny-16-basic-add-ons
+			Art by Lanea Zimmerman and R.Ferreira
+
+		https://opengameart.org/content/16x16-rpg-items
+			Art by Jetrel
+
+		https://opengameart.org/content/food-items-16x16
+			Art by Red_Voxel
+
+		https://opengameart.org/content/gold-treasure-icons-16x16
+			Art by Bonsaiheldin
+
+		https://henrysoftware.itch.io/pixel-food
+
+		https://opengameart.org/content/roguelike-dungeonworld-tiles
+			https://twitter.com/JoeCreates
+
+		https://opengameart.org/content/16x16-indoor-rpg-tileset
+			Art by armisius - https://tilation.itch.io/
+
+		https://opengameart.org/content/1616-block-textures
+			Art by ARoachIFoundOnMyPillow
+
+		Also contains some modified tiles from potluck.png and the EasyRPG RTP
+
+	extra_v2.png
+		Contains tiles from potluck.png and the EasyRPG RTP
+
+	pulp.png
+		By https://justthepulp.mooffee.net/
+		Licensed for use in Tilemap Town only, unless the artist is asked for permission
+		Some tiles have been modified for better autotiling
+
+	global.png
+		Contains tiles from potluck.png and extra.png (with new tiles pulled from the original tilesets that extra.png pulled from), with edits by JustThePulp (mostly for animation and additional variations)
+		Contains original tiles by JustThePulp (button icons, controller icons, flags, logos, Macintosh style window border, clock parts)
+		One of the portraits includes sprites of Ichugo, Button, and Cherry, by NovaSquirrel
+		Ace card sprite by Firecakes
+
+	npc.png
+		Contains tiles from potluck.png with edits and additional animation frames by JustThePulp
+		Contains original tiles by JustThePulp (hand character, arrow character, green and yellow turtles, crab, worm, butterfly)
+
+	shadows.png
+		By JustThePulp
+
+	webclient.png
+		Contains tiles from potluck.png, and edits of those tiles
+		Some original art by NovaSquirrel
+
+BBCode parser: https://github.com/patorjk/Extendible-BBCode-Parser
+
+Luau (by Roblox Corporation and PUC-Rio.) is used for scripting
+
+Name font: Tilemap Sans by hellomynameisjoe
+
+libopenmpt ( https://lib.openmpt.org/libopenmpt/ )
+chiptune2.js ( https://github.com/deskjet/chiptune2.js )

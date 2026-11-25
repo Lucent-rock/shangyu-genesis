@@ -1,0 +1,69 @@
+.log_line {
+  padding: 4px;
+  color: silver; /* Fallback for if the class isn't known */
+}
+
+.user_message {
+  color: white;
+}
+
+.spoof_message {
+  color: white;
+}
+
+.spoof_name {
+  font-size: 10px;
+  color: silver;
+}
+
+.ooc_message {
+  color: silver;
+}
+
+.server_message, .server_stats, .server_motd, .server_map_message, .sign_message, .map_info_message .user_request {
+  color: pink;
+}
+
+.event_notice {
+  color: HotPink;
+}
+
+.error_message, .connection_error_message {
+  color: red;
+}
+
+.broadcast_message {
+  color: cyan;
+}
+
+.private_message {
+  color: lime;
+}
+
+.secret_message {
+  color: DeepPink;
+}
+
+.status_change {
+  color: silver;
+}
+
+.spoiler {
+  color: gray; 
+  background-color: gray;
+}
+
+.spoiler:hover {
+  color: white; 
+  background-color: black;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: silver;
+}
+
+.distant_message {
+  font-size: 10px;
+  color: gray;
+}

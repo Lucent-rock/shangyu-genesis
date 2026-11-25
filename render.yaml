@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: shangyu-genesis-ws
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r pyserver/requirements.txt
+    startCommand: cd pyserver && python run_render.py config.render.json
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
